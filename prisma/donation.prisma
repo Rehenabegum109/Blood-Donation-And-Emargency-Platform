@@ -1,0 +1,19 @@
+model Donation {
+  id String @id @default(uuid())
+
+  donorId        String
+  bloodRequestId String
+
+  status DonationStatus @default(PENDING)
+
+  donationDate DateTime?
+  units        Int       @default(1)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  donor        Donor        @relation(fields: [donorId], references: [id])
+  bloodRequest BloodRequest @relation(fields: [bloodRequestId], references: [id])
+}

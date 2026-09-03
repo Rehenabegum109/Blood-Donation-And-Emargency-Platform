@@ -1,0 +1,68 @@
+enum Role {
+  ADMIN
+  DONOR
+  RECIPIENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum UrgencyLevel {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum BloodRequestStatus {
+  PENDING
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
+enum DonationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BKASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PAYMENT
+  APPROVE
+  REJECT
+  BLOCK
+  UNBLOCK
+}

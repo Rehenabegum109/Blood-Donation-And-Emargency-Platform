@@ -1,0 +1,21 @@
+model Payment {
+  id String @id @default(uuid())
+
+  bloodRequestId String @unique
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("BDT")
+
+  method PaymentMethod @default(BKASH)
+  status PaymentStatus @default(PENDING)
+
+  transactionId   String? @unique
+  gatewayResponse Json?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bloodRequest BloodRequest @relation(fields: [bloodRequestId], references: [id])
+}
