@@ -54,6 +54,7 @@ enum PaymentStatus {
   CANCELLED
   REFUNDED
 }
+
 enum AuditAction {
   CREATE
   UPDATE

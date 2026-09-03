@@ -49,6 +49,7 @@ export type BloodRequestMinAggregateOutputType = {
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type BloodRequestMaxAggregateOutputType = {
@@ -66,6 +67,7 @@ export type BloodRequestMaxAggregateOutputType = {
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type BloodRequestCountAggregateOutputType = {
@@ -83,6 +85,7 @@ export type BloodRequestCountAggregateOutputType = {
   notes: number
   createdAt: number
   updatedAt: number
+  deletedAt: number
   _all: number
 }
 
@@ -110,6 +113,7 @@ export type BloodRequestMinAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  deletedAt?: true
 }
 
 export type BloodRequestMaxAggregateInputType = {
@@ -127,6 +131,7 @@ export type BloodRequestMaxAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  deletedAt?: true
 }
 
 export type BloodRequestCountAggregateInputType = {
@@ -144,6 +149,7 @@ export type BloodRequestCountAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  deletedAt?: true
   _all?: true
 }
 
@@ -248,6 +254,7 @@ export type BloodRequestGroupByOutputType = {
   notes: string | null
   createdAt: Date
   updatedAt: Date
+  deletedAt: Date | null
   _count: BloodRequestCountAggregateOutputType | null
   _avg: BloodRequestAvgAggregateOutputType | null
   _sum: BloodRequestSumAggregateOutputType | null
@@ -288,6 +295,7 @@ export type BloodRequestWhereInput = {
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
   recipient?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   donations?: Prisma.DonationListRelationFilter
   payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null
@@ -308,6 +316,7 @@ export type BloodRequestOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   recipient?: Prisma.UserOrderByWithRelationInput
   donations?: Prisma.DonationOrderByRelationAggregateInput
   payment?: Prisma.PaymentOrderByWithRelationInput
@@ -331,6 +340,7 @@ export type BloodRequestWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
   recipient?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   donations?: Prisma.DonationListRelationFilter
   payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null
@@ -351,6 +361,7 @@ export type BloodRequestOrderByWithAggregationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.BloodRequestCountOrderByAggregateInput
   _avg?: Prisma.BloodRequestAvgOrderByAggregateInput
   _max?: Prisma.BloodRequestMaxOrderByAggregateInput
@@ -376,6 +387,7 @@ export type BloodRequestScalarWhereWithAggregatesInput = {
   notes?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BloodRequest"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BloodRequest"> | Date | string | null
 }
 
 export type BloodRequestCreateInput = {
@@ -392,6 +404,7 @@ export type BloodRequestCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   recipient: Prisma.UserCreateNestedOneWithoutBloodRequestsInput
   donations?: Prisma.DonationCreateNestedManyWithoutBloodRequestInput
   payment?: Prisma.PaymentCreateNestedOneWithoutBloodRequestInput
@@ -412,6 +425,7 @@ export type BloodRequestUncheckedCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   donations?: Prisma.DonationUncheckedCreateNestedManyWithoutBloodRequestInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBloodRequestInput
 }
@@ -430,6 +444,7 @@ export type BloodRequestUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   recipient?: Prisma.UserUpdateOneRequiredWithoutBloodRequestsNestedInput
   donations?: Prisma.DonationUpdateManyWithoutBloodRequestNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutBloodRequestNestedInput
@@ -450,6 +465,7 @@ export type BloodRequestUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   donations?: Prisma.DonationUncheckedUpdateManyWithoutBloodRequestNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutBloodRequestNestedInput
 }
@@ -469,6 +485,7 @@ export type BloodRequestCreateManyInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type BloodRequestUpdateManyMutationInput = {
@@ -485,6 +502,7 @@ export type BloodRequestUpdateManyMutationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BloodRequestUncheckedUpdateManyInput = {
@@ -502,6 +520,7 @@ export type BloodRequestUncheckedUpdateManyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type BloodRequestCountOrderByAggregateInput = {
@@ -519,6 +538,7 @@ export type BloodRequestCountOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type BloodRequestAvgOrderByAggregateInput = {
@@ -540,6 +560,7 @@ export type BloodRequestMaxOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type BloodRequestMinOrderByAggregateInput = {
@@ -557,6 +578,7 @@ export type BloodRequestMinOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type BloodRequestSumOrderByAggregateInput = {
@@ -596,6 +618,10 @@ export type EnumUrgencyLevelFieldUpdateOperationsInput = {
 
 export type EnumBloodRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.BloodRequestStatus
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type BloodRequestCreateNestedOneWithoutDonationsInput = {
@@ -682,6 +708,7 @@ export type BloodRequestCreateWithoutDonationsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   recipient: Prisma.UserCreateNestedOneWithoutBloodRequestsInput
   payment?: Prisma.PaymentCreateNestedOneWithoutBloodRequestInput
 }
@@ -701,6 +728,7 @@ export type BloodRequestUncheckedCreateWithoutDonationsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBloodRequestInput
 }
 
@@ -734,6 +762,7 @@ export type BloodRequestUpdateWithoutDonationsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   recipient?: Prisma.UserUpdateOneRequiredWithoutBloodRequestsNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutBloodRequestNestedInput
 }
@@ -753,6 +782,7 @@ export type BloodRequestUncheckedUpdateWithoutDonationsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutBloodRequestNestedInput
 }
 
@@ -770,6 +800,7 @@ export type BloodRequestCreateWithoutPaymentInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   recipient: Prisma.UserCreateNestedOneWithoutBloodRequestsInput
   donations?: Prisma.DonationCreateNestedManyWithoutBloodRequestInput
 }
@@ -789,6 +820,7 @@ export type BloodRequestUncheckedCreateWithoutPaymentInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   donations?: Prisma.DonationUncheckedCreateNestedManyWithoutBloodRequestInput
 }
 
@@ -822,6 +854,7 @@ export type BloodRequestUpdateWithoutPaymentInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   recipient?: Prisma.UserUpdateOneRequiredWithoutBloodRequestsNestedInput
   donations?: Prisma.DonationUpdateManyWithoutBloodRequestNestedInput
 }
@@ -841,6 +874,7 @@ export type BloodRequestUncheckedUpdateWithoutPaymentInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   donations?: Prisma.DonationUncheckedUpdateManyWithoutBloodRequestNestedInput
 }
 
@@ -858,6 +892,7 @@ export type BloodRequestCreateWithoutRecipientInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   donations?: Prisma.DonationCreateNestedManyWithoutBloodRequestInput
   payment?: Prisma.PaymentCreateNestedOneWithoutBloodRequestInput
 }
@@ -876,6 +911,7 @@ export type BloodRequestUncheckedCreateWithoutRecipientInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
   donations?: Prisma.DonationUncheckedCreateNestedManyWithoutBloodRequestInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBloodRequestInput
 }
@@ -924,6 +960,7 @@ export type BloodRequestScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
 }
 
 export type BloodRequestCreateManyRecipientInput = {
@@ -940,6 +977,7 @@ export type BloodRequestCreateManyRecipientInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type BloodRequestUpdateWithoutRecipientInput = {
@@ -956,6 +994,7 @@ export type BloodRequestUpdateWithoutRecipientInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   donations?: Prisma.DonationUpdateManyWithoutBloodRequestNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutBloodRequestNestedInput
 }
@@ -974,6 +1013,7 @@ export type BloodRequestUncheckedUpdateWithoutRecipientInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   donations?: Prisma.DonationUncheckedUpdateManyWithoutBloodRequestNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutBloodRequestNestedInput
 }
@@ -992,6 +1032,7 @@ export type BloodRequestUncheckedUpdateManyWithoutRecipientInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1040,6 +1081,7 @@ export type BloodRequestSelect<ExtArgs extends runtime.Types.Extensions.Internal
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  deletedAt?: boolean
   recipient?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   donations?: boolean | Prisma.BloodRequest$donationsArgs<ExtArgs>
   payment?: boolean | Prisma.BloodRequest$paymentArgs<ExtArgs>
@@ -1061,6 +1103,7 @@ export type BloodRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  deletedAt?: boolean
   recipient?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["bloodRequest"]>
 
@@ -1079,6 +1122,7 @@ export type BloodRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  deletedAt?: boolean
   recipient?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["bloodRequest"]>
 
@@ -1097,9 +1141,10 @@ export type BloodRequestSelectScalar = {
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  deletedAt?: boolean
 }
 
-export type BloodRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipientId" | "bloodGroup" | "units" | "hospitalName" | "hospitalAddress" | "requiredDate" | "urgency" | "status" | "contactNumber" | "patientName" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["bloodRequest"]>
+export type BloodRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipientId" | "bloodGroup" | "units" | "hospitalName" | "hospitalAddress" | "requiredDate" | "urgency" | "status" | "contactNumber" | "patientName" | "notes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bloodRequest"]>
 export type BloodRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   recipient?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   donations?: boolean | Prisma.BloodRequest$donationsArgs<ExtArgs>
@@ -1135,6 +1180,7 @@ export type $BloodRequestPayload<ExtArgs extends runtime.Types.Extensions.Intern
     notes: string | null
     createdAt: Date
     updatedAt: Date
+    deletedAt: Date | null
   }, ExtArgs["result"]["bloodRequest"]>
   composites: {}
 }
@@ -1575,6 +1621,7 @@ export interface BloodRequestFieldRefs {
   readonly notes: Prisma.FieldRef<"BloodRequest", 'String'>
   readonly createdAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>
 }
     
 

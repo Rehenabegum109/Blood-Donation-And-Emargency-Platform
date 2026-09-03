@@ -1,17 +1,13 @@
 model Donor {
-  id String @id @default(uuid())
-
-  userId String @unique
-
+  id               String     @id @default(uuid())
+  userId           String     @unique
   bloodGroup       String
   dateOfBirth      DateTime?
   address          String?
   lastDonationDate DateTime?
-  isAvailable      Boolean   @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user      User       @relation(fields: [userId], references: [id])
-  donations Donation[]
+  isAvailable      Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  donations        Donation[]
+  user             User       @relation(fields: [userId], references: [id])
 }

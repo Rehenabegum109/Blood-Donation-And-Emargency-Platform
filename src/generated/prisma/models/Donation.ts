@@ -497,10 +497,6 @@ export type EnumDonationStatusFieldUpdateOperationsInput = {
   set?: $Enums.DonationStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type DonationCreateNestedManyWithoutDonorInput = {
   create?: Prisma.XOR<Prisma.DonationCreateWithoutDonorInput, Prisma.DonationUncheckedCreateWithoutDonorInput> | Prisma.DonationCreateWithoutDonorInput[] | Prisma.DonationUncheckedCreateWithoutDonorInput[]
   connectOrCreate?: Prisma.DonationCreateOrConnectWithoutDonorInput | Prisma.DonationCreateOrConnectWithoutDonorInput[]

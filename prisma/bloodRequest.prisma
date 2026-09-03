@@ -1,28 +1,20 @@
 model BloodRequest {
-  id String @id @default(uuid())
-
-  recipientId String
-
-  bloodGroup BloodGroup
-  units      Int        @default(1)
-
+  id              String             @id @default(uuid())
+  recipientId     String
+  bloodGroup      BloodGroup
+  units           Int                @default(1)
   hospitalName    String
   hospitalAddress String?
-
-  requiredDate DateTime
-  urgency      UrgencyLevel @default(NORMAL)
-
-  status BloodRequestStatus @default(PENDING)
-
-  contactNumber String?
-  patientName   String?
-  notes         String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  recipient User       @relation(fields: [recipientId], references: [id])
-  donations Donation[]
-  payment   Payment?
-
+  requiredDate    DateTime
+  urgency         UrgencyLevel       @default(NORMAL)
+  status          BloodRequestStatus @default(PENDING)
+  contactNumber   String?
+  patientName     String?
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+  recipient       User               @relation(fields: [recipientId], references: [id])
+  donations       Donation[]
+  payment         Payment?
 }

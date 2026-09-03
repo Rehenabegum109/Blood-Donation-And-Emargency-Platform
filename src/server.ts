@@ -6,11 +6,12 @@ import app from "./app";
 import config from "./config";
 import { prisma } from "./lib/prisma";
 import { redisClient } from "./utils/redis";
+import { seedAdmin, seedDonor } from "./utils/seed";
 
 
 const PORT = Number(config.port) || 5000;
 
-const startServer = async () => {
+const main = async () => {
   try {
 
 
@@ -24,7 +25,8 @@ const startServer = async () => {
 
     console.log(" Redis connected");
 
-
+await seedAdmin();
+    await seedDonor();
     app.listen(PORT, () => {
       console.log(
         `🚀 BloodLink server running on port ${PORT}`
@@ -39,4 +41,4 @@ const startServer = async () => {
   }
 };
 
-startServer();
+main();
