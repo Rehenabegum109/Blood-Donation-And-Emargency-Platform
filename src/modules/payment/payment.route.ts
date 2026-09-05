@@ -29,11 +29,7 @@ router.get(
   PaymentController.bkashCallback
 );
 
-router.get(
-  "/bkash/status/:paymentID",
-  auth(Role.RECIPIENT),
-  PaymentController.queryBkashPayment
-);
+
 
 router.get(
   "/my",

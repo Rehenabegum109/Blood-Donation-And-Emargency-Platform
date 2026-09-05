@@ -7,13 +7,21 @@ export const globalErrorHandler: ErrorRequestHandler = (
   res,
   next
 ) => {
-  console.error(error);
+  console.error("Global Error:", error);
 
-  res.status(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json({
+  const statusCode =
+    error.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
+
+  const message =
+    statusCode === httpStatus.INTERNAL_SERVER_ERROR
+      ? "Internal server error"
+      : error.message || "Something went wrong";
+
+  res.status(statusCode).json({
     success: false,
-    statusCode:
-      error.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-    message: error.message || "Something went wrong",
+    statusCode,
+    message,
+    errors: [],
     data: null,
   });
 };

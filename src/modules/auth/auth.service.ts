@@ -14,7 +14,7 @@ import { createAuditLog } from "../../utils/auditLog";
 const register = async (payload: IRegisterPayload) => {
   const email = payload.email.trim().toLowerCase();
 
-  // Check existing user
+
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });

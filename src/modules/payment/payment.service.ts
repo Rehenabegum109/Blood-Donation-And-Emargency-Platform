@@ -701,62 +701,6 @@ const bkashCallback = async (
 
 
 
-const queryBkashPayment = async (
-  paymentID: string
-) => {
-  const bkashIdToken =
-    await getBkashIdToken();
-
-  if (!bkashIdToken) {
-    throw new AppError(
-      httpStatus.BAD_GATEWAY,
-      "No bKash Access Token Found"
-    );
-  }
-
-  const response = await fetch(
-    `${config.bkash_base_url}/tokenized/checkout/general/search`,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: bkashIdToken,
-        "X-App-Key":
-          config.bkash_app_key,
-      },
-
-      body: JSON.stringify({
-        paymentID,
-      }),
-    }
-  );
-
-  const result =
-    (await response.json()) as IBkashQueryPaymentResponse;
-
-  console.log(
-    "bKash Query Status:",
-    response.status
-  );
-
-  console.log(
-    "bKash Query Response:",
-    result
-  );
-
-  if (!response.ok) {
-    throw new AppError(
-      httpStatus.BAD_GATEWAY,
-      result.statusMessage ||
-        "bKash Payment Status Query Failed"
-    );
-  }
-
-  return result;
-};
-
 
 
 const getMyPayments = async (
@@ -1032,7 +976,7 @@ export const PaymentService = {
   initiatePayment,
   executeBkashPayment,
   bkashCallback,
-  queryBkashPayment,
+ 
   getMyPayments,
   getAllPayments,
   getSinglePayment,

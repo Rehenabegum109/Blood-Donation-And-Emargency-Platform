@@ -105,33 +105,7 @@ const bkashCallback = catchAsync(
 
 
 
-const queryBkashPayment = catchAsync(
-  async (
-    req: AuthenticatedRequest,
-    res: Response
-  ) => {
-    const paymentID = req.params.paymentID;
 
-    if (
-      !paymentID ||
-      Array.isArray(paymentID)
-    ) {
-      throw new Error("Invalid payment ID");
-    }
-
-    const result =
-      await PaymentService.queryBkashPayment(
-        paymentID
-      );
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Payment status retrieved successfully",
-      data: result,
-    });
-  }
-);
 
 const getMyPayments = catchAsync(
   async (
@@ -221,7 +195,7 @@ export const PaymentController = {
   initiatePayment,
   executeBkashPayment,
   bkashCallback,
-  queryBkashPayment,
+
   getMyPayments,
   getAllPayments,
   getSinglePayment,
