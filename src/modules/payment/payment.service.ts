@@ -25,9 +25,7 @@ import type {
 } from "./payment.interface";
 import { createAuditLog } from "../../utils/auditLog";
 
-// ==================================================
-// Create Payment on bKash
-// ==================================================
+
 
 const createBkashPayment = async (
   payload: IBkashCreatePaymentPayload
@@ -89,13 +87,6 @@ const createBkashPayment = async (
   return result;
 };
 
-// ==================================================
-// Initiate Payment
-// ==================================================
-
-// ==================================================
-// Initiate Payment
-// ==================================================
 const initiatePayment = async (
   recipientId: string,
   payload: IInitiatePaymentPayload
@@ -208,10 +199,6 @@ const initiatePayment = async (
     );
   }
 
-  // -----------------------------------------------
-  // 5. Short Prisma Transaction
-  // Create new payment OR update failed/cancelled payment
-  // -----------------------------------------------
 
   const payment =
     await prisma.$transaction(
@@ -223,9 +210,6 @@ const initiatePayment = async (
             },
           });
 
-        // -------------------------------------------
-        // No previous payment
-        // -------------------------------------------
 
         if (!currentPayment) {
           return tx.payment.create({
@@ -236,7 +220,7 @@ const initiatePayment = async (
               method: PaymentMethod.BKASH,
               status: PaymentStatus.PENDING,
               bkashPaymentId:
-                bkashPayment.paymentID,
+                bkashPayment.paymentID!,
               gatewayResponse:
                 JSON.parse(
                   JSON.stringify(bkashPayment)
@@ -245,9 +229,6 @@ const initiatePayment = async (
           });
         }
 
-        // -------------------------------------------
-        // Payment became PENDING/PAID meanwhile
-        // -------------------------------------------
 
         if (
           currentPayment.status ===
@@ -269,9 +250,7 @@ const initiatePayment = async (
           );
         }
 
-        // -------------------------------------------
-        // Retry FAILED / CANCELLED payment
-        // -------------------------------------------
+      
 
         if (
           currentPayment.status ===
@@ -291,7 +270,7 @@ const initiatePayment = async (
 
               // New bKash payment ID
               bkashPaymentId:
-                bkashPayment.paymentID,
+                bkashPayment.paymentID!,
 
               // Reset previous transaction data
               transactionId: null,
@@ -360,10 +339,6 @@ const initiatePayment = async (
     paymentUrl: bkashPayment.bkashURL,
   };
 };
-
-// ==================================================
-// Execute bKash Payment
-// ==================================================
 
 const executeBkashPayment = async (
   paymentID: string
@@ -528,9 +503,7 @@ const executeBkashPayment = async (
 
   return result;
 };
-// ==================================================
-// bKash Callback
-// ==================================================
+
 
 const bkashCallback = async (
   query: Record<string, string | undefined>
@@ -997,9 +970,6 @@ const getAllPayments = async (
   };
 };
 
-// ==================================================
-// Get Single Payment
-// ==================================================
 
 const getSinglePayment = async (
   paymentId: string,
@@ -1055,9 +1025,7 @@ const getSinglePayment = async (
   return payment;
 };
 
-// ==================================================
-// Export
-// ==================================================
+
 
 export const PaymentService = {
   createBkashPayment,

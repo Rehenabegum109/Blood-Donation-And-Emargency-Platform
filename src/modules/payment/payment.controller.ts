@@ -7,9 +7,7 @@ import { sendResponse } from "../../utils/sendResponse";
 
 import { PaymentService } from "./payment.service";
 
-// ==================================================
-// Initiate Payment
-// ==================================================
+
 
 const initiatePayment = catchAsync(
   async (
@@ -37,9 +35,7 @@ const initiatePayment = catchAsync(
   }
 );
 
-// ==================================================
-// Execute bKash Payment
-// ==================================================
+
 
 const executeBkashPayment = catchAsync(
   async (
@@ -68,10 +64,6 @@ const executeBkashPayment = catchAsync(
     });
   }
 );
-
-// ==================================================
-// bKash Callback
-// ==================================================
 
 const bkashCallback = catchAsync(
   async (
@@ -111,9 +103,7 @@ const bkashCallback = catchAsync(
   }
 );
 
-// ==================================================
-// Query bKash Payment Status
-// ==================================================
+
 
 const queryBkashPayment = catchAsync(
   async (
@@ -143,10 +133,6 @@ const queryBkashPayment = catchAsync(
   }
 );
 
-// ==================================================
-// Get My Payments
-// ==================================================
-
 const getMyPayments = catchAsync(
   async (
     req: AuthenticatedRequest,
@@ -174,9 +160,7 @@ const getMyPayments = catchAsync(
   }
 );
 
-// ==================================================
-// Get All Payments
-// ==================================================
+
 
 const getAllPayments = catchAsync(
   async (
@@ -198,9 +182,7 @@ const getAllPayments = catchAsync(
   }
 );
 
-// ==================================================
-// Get Single Payment
-// ==================================================
+
 
 const getSinglePayment = catchAsync(
   async (
