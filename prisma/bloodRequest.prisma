@@ -1,20 +1,42 @@
 model BloodRequest {
-  id              String             @id @default(uuid())
-  recipientId     String
-  bloodGroup      BloodGroup
-  units           Int                @default(1)
-  hospitalName    String
-  hospitalAddress String?
-  requiredDate    DateTime
-  urgency         UrgencyLevel       @default(NORMAL)
-  status          BloodRequestStatus @default(PENDING)
-  contactNumber   String?
-  patientName     String?
-  notes           String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  deletedAt       DateTime?
-  recipient       User               @relation(fields: [recipientId], references: [id])
-  donations       Donation[]
-  payment         Payment?
+  id                 String             @id @default(uuid())
+  recipientId        String
+
+  bloodGroup         BloodGroup
+  units              Int                @default(1)
+
+  hospitalName       String
+  hospitalAddress    String?
+  hospitalLatitude   Float?
+  hospitalLongitude  Float?
+
+  patientName        String?
+  contactNumber      String?
+  requiredDate       DateTime
+
+  urgency            UrgencyLevel       @default(NORMAL)
+  status             BloodRequestStatus @default(PENDING)
+
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  verifiedBy         String?
+  rejectionReason    String?
+
+  notes              String?
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+
+  recipient          User               @relation(fields: [recipientId], references: [id])
+  donations          Donation[]
+  payment            Payment?
+
+  @@index([recipientId])
+  @@index([bloodGroup])
+  @@index([status])
+  @@index([urgency])
+  @@index([requiredDate])
+  @@index([bloodGroup, status, urgency])
+  @@index([verificationStatus])
 }

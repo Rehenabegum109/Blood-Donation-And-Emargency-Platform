@@ -39,8 +39,13 @@ const getMyDonations = catchAsync(
       throw new Error("User not found");
     }
 
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
     const result = await DonationService.getMyDonations(
-      donorUserId
+      donorUserId,
+      page,
+      limit
     );
 
     sendResponse(res, {
@@ -80,6 +85,8 @@ const approveDonation = catchAsync(
     });
   }
 );
+
+
 const rejectDonation = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const recipientId = req.user?.id;
@@ -109,9 +116,11 @@ const rejectDonation = catchAsync(
     });
   }
 );
+
 export const DonationController = {
   createDonation,
   getMyDonations,
   approveDonation,
+
   rejectDonation,
 };

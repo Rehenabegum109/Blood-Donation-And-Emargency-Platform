@@ -2,12 +2,19 @@ model Donation {
   id             String         @id @default(uuid())
   donorId        String
   bloodRequestId String
+
   status         DonationStatus @default(PENDING)
   donationDate   DateTime?
   units          Int            @default(1)
   notes          String?
+
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
   bloodRequest   BloodRequest   @relation(fields: [bloodRequestId], references: [id])
   donor          Donor          @relation(fields: [donorId], references: [id])
+
+  @@unique([donorId, bloodRequestId])
+  @@index([bloodRequestId, status])
+  @@index([donorId, status])
 }

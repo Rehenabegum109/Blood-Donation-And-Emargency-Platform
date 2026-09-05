@@ -2,35 +2,36 @@ import { prisma } from "../../lib/prisma";
 
 
 const getMyProfile = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-      phone: true,
-      location: true,
-      profileImage: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true,
+const user = await prisma.user.findFirst({
+  where: {
+    id: userId,
+    deletedAt: null,
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    status: true,
+    phone: true,
+    location: true,
+    profileImage: true,
+    emailVerified: true,
+    createdAt: true,
+    updatedAt: true,
 
-      donor: {
-        select: {
-          id: true,
-          bloodGroup: true,
-          dateOfBirth: true,
-          address: true,
-          lastDonationDate: true,
-          isAvailable: true,
-        },
+    donor: {
+      select: {
+        id: true,
+        bloodGroup: true,
+        dateOfBirth: true,
+        address: true,
+        lastDonationDate: true,
+        isAvailable: true,
       },
     },
-  });
+  },
+});
 
   if (!user) {
     throw new Error("User not found");
@@ -60,6 +61,7 @@ const updateMyProfile = async (
   const updatedUser = await prisma.user.update({
     where: {
       id: userId,
+      deletedAt: null,
     },
     data: payload,
     select: {

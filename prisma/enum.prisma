@@ -54,6 +54,11 @@ enum PaymentStatus {
   CANCELLED
   REFUNDED
 }
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
 
 enum AuditAction {
   CREATE

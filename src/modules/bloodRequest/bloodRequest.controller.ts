@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import { Request, Response } from "express";
 import httpStatus from "http-status";
 
 import { catchAsync } from "../../utils/catchAsync";
@@ -202,6 +202,66 @@ const searchBloodRequests = catchAsync(
     });
   }
 );
+const verifyBloodRequest = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      throw new Error("Admin authentication required");
+    }
+const bloodRequestId = Array.isArray(req.params.id)
+  ? req.params.id[0]
+  : req.params.id;
+
+if (!bloodRequestId) {
+  throw new Error("Blood request ID is required");
+}
+
+const result = await BloodRequestService.verifyBloodRequest(
+  bloodRequestId,
+  adminId
+);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Blood request verified successfully",
+      data: result,
+    });
+  }
+);
+const rejectBloodRequest = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      throw new Error("Admin authentication required");
+    }
+
+    const bloodRequestId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+
+    if (!bloodRequestId) {
+      throw new Error("Blood request ID is required");
+    }
+
+    const { rejectionReason } = req.body;
+
+    const result = await BloodRequestService.rejectBloodRequest(
+      bloodRequestId,
+      adminId,
+      rejectionReason
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Blood request rejected successfully",
+      data: result,
+    });
+  }
+);
 export const BloodRequestController = {
   createBloodRequest,
   getAllBloodRequests,
@@ -209,4 +269,6 @@ export const BloodRequestController = {
   updateBloodRequest,
   deleteBloodRequest,
   searchBloodRequests,
+  verifyBloodRequest,
+  rejectBloodRequest,
 };

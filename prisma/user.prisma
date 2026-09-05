@@ -1,19 +1,25 @@
 model User {
-  id            String         @id @default(uuid())
+  id            String        @id @default(uuid())
   name          String
-  email         String         @unique
+  email         String        @unique
   password      String?
-  role          Role           @default(RECIPIENT)
-  status        AccountStatus  @default(ACTIVE)
+  role          Role          @default(RECIPIENT)
+  status        AccountStatus @default(ACTIVE)
   phone         String?
   location      String?
   profileImage  String?
-  emailVerified Boolean        @default(false)
+  emailVerified Boolean       @default(false)
+
   deletedAt     DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
   auditLogs     AuditLog[]
   bloodRequests BloodRequest[]
   donor         Donor?
   refreshTokens RefreshToken[]
+
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
 }

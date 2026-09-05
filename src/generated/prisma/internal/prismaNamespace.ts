@@ -1002,11 +1002,17 @@ export const BloodRequestScalarFieldEnum = {
   units: 'units',
   hospitalName: 'hospitalName',
   hospitalAddress: 'hospitalAddress',
+  hospitalLatitude: 'hospitalLatitude',
+  hospitalLongitude: 'hospitalLongitude',
+  patientName: 'patientName',
+  contactNumber: 'contactNumber',
   requiredDate: 'requiredDate',
   urgency: 'urgency',
   status: 'status',
-  contactNumber: 'contactNumber',
-  patientName: 'patientName',
+  verificationStatus: 'verificationStatus',
+  verifiedAt: 'verifiedAt',
+  verifiedBy: 'verifiedBy',
+  rejectionReason: 'rejectionReason',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -1037,6 +1043,8 @@ export const DonorScalarFieldEnum = {
   bloodGroup: 'bloodGroup',
   dateOfBirth: 'dateOfBirth',
   address: 'address',
+  latitude: 'latitude',
+  longitude: 'longitude',
   lastDonationDate: 'lastDonationDate',
   isAvailable: 'isAvailable',
   createdAt: 'createdAt',
@@ -1053,6 +1061,7 @@ export const PaymentScalarFieldEnum = {
   currency: 'currency',
   method: 'method',
   status: 'status',
+  bkashPaymentId: 'bkashPaymentId',
   transactionId: 'transactionId',
   gatewayResponse: 'gatewayResponse',
   paidAt: 'paidAt',
@@ -1225,6 +1234,20 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
  * Reference to a field of type 'UrgencyLevel'
  */
 export type EnumUrgencyLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UrgencyLevel'>
@@ -1249,6 +1272,20 @@ export type EnumBloodRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputTyp
  * Reference to a field of type 'BloodRequestStatus[]'
  */
 export type ListEnumBloodRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BloodRequestStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationStatus'
+ */
+export type EnumVerificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationStatus[]'
+ */
+export type ListEnumVerificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationStatus[]'>
     
 
 
@@ -1340,20 +1377,6 @@ export type EnumAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'AccountStatus[]'
  */
 export type ListEnumAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**

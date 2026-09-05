@@ -1,6 +1,44 @@
-import { BloodRequestStatus } from "../../generated/prisma/enums";
+import { AuditAction, BloodRequestStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { createAuditLog } from "../../utils/auditLog";
 import { ICreateBloodRequestPayload, IUpdateBloodRequestPayload } from "./bloodRequest.interface";
+
+// const createBloodRequest = async (
+//   recipientId: string,
+//   payload: ICreateBloodRequestPayload
+// ) => {
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       id: recipientId,
+//     },
+//   });
+
+//   if (!user) {
+//     throw new Error("User not found");
+//   }
+
+//   if (user.role !== "RECIPIENT") {
+//     throw new Error("Only recipients can create blood requests");
+//   }
+
+//   const bloodRequest = await prisma.bloodRequest.create({
+//     data: {
+//       recipientId,
+//       bloodGroup: payload.bloodGroup,
+//       units: payload.units ?? 1,
+//       hospitalName: payload.hospitalName,
+//       hospitalAddress: payload.hospitalAddress ?? null,
+//       requiredDate: payload.requiredDate,
+//       urgency: payload.urgency ?? "NORMAL",
+//       status: BloodRequestStatus.PENDING,
+//       contactNumber: payload.contactNumber ?? null,
+//       patientName: payload.patientName ?? null,
+//       notes: payload.notes ?? null,
+//     },
+//   });
+
+//   return bloodRequest;
+// };
 
 const createBloodRequest = async (
   recipientId: string,
@@ -36,9 +74,22 @@ const createBloodRequest = async (
     },
   });
 
+  // Audit log
+  await createAuditLog({
+    userId: recipientId,
+    action: AuditAction.CREATE,
+    entity: "BloodRequest",
+    entityId: bloodRequest.id,
+    details: {
+      bloodGroup: bloodRequest.bloodGroup,
+      units: bloodRequest.units,
+      urgency: bloodRequest.urgency,
+      message: "Blood request created by recipient",
+    },
+  });
+
   return bloodRequest;
 };
-
 const getAllBloodRequests = async (
   page: number,
   limit: number,
@@ -173,6 +224,18 @@ const updateBloodRequest = async (
     },
   });
 
+  // Audit log
+  await createAuditLog({
+    userId: recipientId,
+    action: AuditAction.UPDATE,
+    entity: "BloodRequest",
+    entityId: updatedBloodRequest.id,
+    details: {
+      message: "Blood request updated by recipient",
+      updatedFields: Object.keys(payload),
+    },
+  });
+
   return updatedBloodRequest;
 };
 const deleteBloodRequest = async (
@@ -201,6 +264,17 @@ const deleteBloodRequest = async (
     },
     data: {
       deletedAt: new Date(),
+    },
+  });
+
+  // Audit log
+  await createAuditLog({
+    userId: recipientId,
+    action: AuditAction.DELETE,
+    entity: "BloodRequest",
+    entityId: deletedBloodRequest.id,
+    details: {
+      message: "Blood request deleted by recipient",
     },
   });
 
@@ -278,6 +352,105 @@ const searchBloodRequests = async (
     },
   };
 };
+
+const verifyBloodRequest = async (
+  bloodRequestId: string,
+  adminId: string
+) => {
+  const bloodRequest = await prisma.bloodRequest.findFirst({
+    where: {
+      id: bloodRequestId,
+      deletedAt: null,
+    },
+  });
+
+  if (!bloodRequest) {
+    throw new Error("Blood request not found");
+  }
+
+  if (bloodRequest.verificationStatus === "VERIFIED") {
+    throw new Error("Blood request is already verified");
+  }
+
+  if (bloodRequest.verificationStatus === "REJECTED") {
+    throw new Error("Rejected blood request cannot be verified");
+  }
+
+  const updatedBloodRequest = await prisma.bloodRequest.update({
+    where: {
+      id: bloodRequestId,
+    },
+    data: {
+      verificationStatus: "VERIFIED",
+      verifiedAt: new Date(),
+      verifiedBy: adminId,
+      rejectionReason: null,
+    },
+  });
+
+  await createAuditLog({
+    userId: adminId,
+    action: AuditAction.APPROVE,
+    entity: "BloodRequest",
+    entityId: bloodRequestId,
+    details: {
+      verificationStatus: "VERIFIED",
+      message: "Blood request verified by admin",
+    },
+  });
+
+  return updatedBloodRequest;
+};
+const rejectBloodRequest = async (
+  bloodRequestId: string,
+  adminId: string,
+  rejectionReason: string
+) => {
+  const bloodRequest = await prisma.bloodRequest.findFirst({
+    where: {
+      id: bloodRequestId,
+      deletedAt: null,
+    },
+  });
+
+  if (!bloodRequest) {
+    throw new Error("Blood request not found");
+  }
+
+  if (bloodRequest.verificationStatus === "VERIFIED") {
+    throw new Error("Verified blood request cannot be rejected");
+  }
+
+  if (bloodRequest.verificationStatus === "REJECTED") {
+    throw new Error("Blood request is already rejected");
+  }
+
+  const updatedBloodRequest = await prisma.bloodRequest.update({
+    where: {
+      id: bloodRequestId,
+    },
+    data: {
+      verificationStatus: "REJECTED",
+      rejectionReason,
+      verifiedAt: new Date(),
+      verifiedBy: adminId,
+    },
+  });
+
+  await createAuditLog({
+    userId: adminId,
+    action: AuditAction.REJECT,
+    entity: "BloodRequest",
+    entityId: bloodRequestId,
+    details: {
+      verificationStatus: "REJECTED",
+      rejectionReason,
+      message: "Blood request rejected by admin",
+    },
+  });
+
+  return updatedBloodRequest;
+};
 export const BloodRequestService = {
   createBloodRequest,
   getAllBloodRequests,
@@ -285,5 +458,7 @@ export const BloodRequestService = {
   updateBloodRequest,
   deleteBloodRequest,
   searchBloodRequests,
+  verifyBloodRequest,
+  rejectBloodRequest
 };
  

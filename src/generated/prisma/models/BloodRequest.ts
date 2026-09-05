@@ -28,10 +28,14 @@ export type AggregateBloodRequest = {
 
 export type BloodRequestAvgAggregateOutputType = {
   units: number | null
+  hospitalLatitude: number | null
+  hospitalLongitude: number | null
 }
 
 export type BloodRequestSumAggregateOutputType = {
   units: number | null
+  hospitalLatitude: number | null
+  hospitalLongitude: number | null
 }
 
 export type BloodRequestMinAggregateOutputType = {
@@ -41,11 +45,17 @@ export type BloodRequestMinAggregateOutputType = {
   units: number | null
   hospitalName: string | null
   hospitalAddress: string | null
+  hospitalLatitude: number | null
+  hospitalLongitude: number | null
+  patientName: string | null
+  contactNumber: string | null
   requiredDate: Date | null
   urgency: $Enums.UrgencyLevel | null
   status: $Enums.BloodRequestStatus | null
-  contactNumber: string | null
-  patientName: string | null
+  verificationStatus: $Enums.VerificationStatus | null
+  verifiedAt: Date | null
+  verifiedBy: string | null
+  rejectionReason: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -59,11 +69,17 @@ export type BloodRequestMaxAggregateOutputType = {
   units: number | null
   hospitalName: string | null
   hospitalAddress: string | null
+  hospitalLatitude: number | null
+  hospitalLongitude: number | null
+  patientName: string | null
+  contactNumber: string | null
   requiredDate: Date | null
   urgency: $Enums.UrgencyLevel | null
   status: $Enums.BloodRequestStatus | null
-  contactNumber: string | null
-  patientName: string | null
+  verificationStatus: $Enums.VerificationStatus | null
+  verifiedAt: Date | null
+  verifiedBy: string | null
+  rejectionReason: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -77,11 +93,17 @@ export type BloodRequestCountAggregateOutputType = {
   units: number
   hospitalName: number
   hospitalAddress: number
+  hospitalLatitude: number
+  hospitalLongitude: number
+  patientName: number
+  contactNumber: number
   requiredDate: number
   urgency: number
   status: number
-  contactNumber: number
-  patientName: number
+  verificationStatus: number
+  verifiedAt: number
+  verifiedBy: number
+  rejectionReason: number
   notes: number
   createdAt: number
   updatedAt: number
@@ -92,10 +114,14 @@ export type BloodRequestCountAggregateOutputType = {
 
 export type BloodRequestAvgAggregateInputType = {
   units?: true
+  hospitalLatitude?: true
+  hospitalLongitude?: true
 }
 
 export type BloodRequestSumAggregateInputType = {
   units?: true
+  hospitalLatitude?: true
+  hospitalLongitude?: true
 }
 
 export type BloodRequestMinAggregateInputType = {
@@ -105,11 +131,17 @@ export type BloodRequestMinAggregateInputType = {
   units?: true
   hospitalName?: true
   hospitalAddress?: true
+  hospitalLatitude?: true
+  hospitalLongitude?: true
+  patientName?: true
+  contactNumber?: true
   requiredDate?: true
   urgency?: true
   status?: true
-  contactNumber?: true
-  patientName?: true
+  verificationStatus?: true
+  verifiedAt?: true
+  verifiedBy?: true
+  rejectionReason?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -123,11 +155,17 @@ export type BloodRequestMaxAggregateInputType = {
   units?: true
   hospitalName?: true
   hospitalAddress?: true
+  hospitalLatitude?: true
+  hospitalLongitude?: true
+  patientName?: true
+  contactNumber?: true
   requiredDate?: true
   urgency?: true
   status?: true
-  contactNumber?: true
-  patientName?: true
+  verificationStatus?: true
+  verifiedAt?: true
+  verifiedBy?: true
+  rejectionReason?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -141,11 +179,17 @@ export type BloodRequestCountAggregateInputType = {
   units?: true
   hospitalName?: true
   hospitalAddress?: true
+  hospitalLatitude?: true
+  hospitalLongitude?: true
+  patientName?: true
+  contactNumber?: true
   requiredDate?: true
   urgency?: true
   status?: true
-  contactNumber?: true
-  patientName?: true
+  verificationStatus?: true
+  verifiedAt?: true
+  verifiedBy?: true
+  rejectionReason?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -246,11 +290,17 @@ export type BloodRequestGroupByOutputType = {
   units: number
   hospitalName: string
   hospitalAddress: string | null
+  hospitalLatitude: number | null
+  hospitalLongitude: number | null
+  patientName: string | null
+  contactNumber: string | null
   requiredDate: Date
   urgency: $Enums.UrgencyLevel
   status: $Enums.BloodRequestStatus
-  contactNumber: string | null
-  patientName: string | null
+  verificationStatus: $Enums.VerificationStatus
+  verifiedAt: Date | null
+  verifiedBy: string | null
+  rejectionReason: string | null
   notes: string | null
   createdAt: Date
   updatedAt: Date
@@ -287,11 +337,17 @@ export type BloodRequestWhereInput = {
   units?: Prisma.IntFilter<"BloodRequest"> | number
   hospitalName?: Prisma.StringFilter<"BloodRequest"> | string
   hospitalAddress?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  hospitalLatitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  hospitalLongitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   requiredDate?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   urgency?: Prisma.EnumUrgencyLevelFilter<"BloodRequest"> | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFilter<"BloodRequest"> | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
-  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFilter<"BloodRequest"> | $Enums.VerificationStatus
+  verifiedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
+  verifiedBy?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
@@ -308,11 +364,17 @@ export type BloodRequestOrderByWithRelationInput = {
   units?: Prisma.SortOrder
   hospitalName?: Prisma.SortOrder
   hospitalAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  patientName?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   requiredDate?: Prisma.SortOrder
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  contactNumber?: Prisma.SortOrderInput | Prisma.SortOrder
-  patientName?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationStatus?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifiedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -332,11 +394,17 @@ export type BloodRequestWhereUniqueInput = Prisma.AtLeast<{
   units?: Prisma.IntFilter<"BloodRequest"> | number
   hospitalName?: Prisma.StringFilter<"BloodRequest"> | string
   hospitalAddress?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  hospitalLatitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  hospitalLongitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   requiredDate?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   urgency?: Prisma.EnumUrgencyLevelFilter<"BloodRequest"> | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFilter<"BloodRequest"> | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
-  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFilter<"BloodRequest"> | $Enums.VerificationStatus
+  verifiedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
+  verifiedBy?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
@@ -353,11 +421,17 @@ export type BloodRequestOrderByWithAggregationInput = {
   units?: Prisma.SortOrder
   hospitalName?: Prisma.SortOrder
   hospitalAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  patientName?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   requiredDate?: Prisma.SortOrder
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  contactNumber?: Prisma.SortOrderInput | Prisma.SortOrder
-  patientName?: Prisma.SortOrderInput | Prisma.SortOrder
+  verificationStatus?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifiedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -379,11 +453,17 @@ export type BloodRequestScalarWhereWithAggregatesInput = {
   units?: Prisma.IntWithAggregatesFilter<"BloodRequest"> | number
   hospitalName?: Prisma.StringWithAggregatesFilter<"BloodRequest"> | string
   hospitalAddress?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
+  hospitalLatitude?: Prisma.FloatNullableWithAggregatesFilter<"BloodRequest"> | number | null
+  hospitalLongitude?: Prisma.FloatNullableWithAggregatesFilter<"BloodRequest"> | number | null
+  patientName?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
+  contactNumber?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
   requiredDate?: Prisma.DateTimeWithAggregatesFilter<"BloodRequest"> | Date | string
   urgency?: Prisma.EnumUrgencyLevelWithAggregatesFilter<"BloodRequest"> | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusWithAggregatesFilter<"BloodRequest"> | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
-  patientName?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusWithAggregatesFilter<"BloodRequest"> | $Enums.VerificationStatus
+  verifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BloodRequest"> | Date | string | null
+  verifiedBy?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
+  rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BloodRequest"> | Date | string
@@ -396,11 +476,17 @@ export type BloodRequestCreateInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -417,11 +503,17 @@ export type BloodRequestUncheckedCreateInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -436,11 +528,17 @@ export type BloodRequestUpdateInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -457,11 +555,17 @@ export type BloodRequestUncheckedUpdateInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -477,11 +581,17 @@ export type BloodRequestCreateManyInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -494,11 +604,17 @@ export type BloodRequestUpdateManyMutationInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -512,11 +628,17 @@ export type BloodRequestUncheckedUpdateManyInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -530,11 +652,17 @@ export type BloodRequestCountOrderByAggregateInput = {
   units?: Prisma.SortOrder
   hospitalName?: Prisma.SortOrder
   hospitalAddress?: Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrder
+  patientName?: Prisma.SortOrder
+  contactNumber?: Prisma.SortOrder
   requiredDate?: Prisma.SortOrder
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  contactNumber?: Prisma.SortOrder
-  patientName?: Prisma.SortOrder
+  verificationStatus?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  verifiedBy?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -543,6 +671,8 @@ export type BloodRequestCountOrderByAggregateInput = {
 
 export type BloodRequestAvgOrderByAggregateInput = {
   units?: Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrder
 }
 
 export type BloodRequestMaxOrderByAggregateInput = {
@@ -552,11 +682,17 @@ export type BloodRequestMaxOrderByAggregateInput = {
   units?: Prisma.SortOrder
   hospitalName?: Prisma.SortOrder
   hospitalAddress?: Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrder
+  patientName?: Prisma.SortOrder
+  contactNumber?: Prisma.SortOrder
   requiredDate?: Prisma.SortOrder
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  contactNumber?: Prisma.SortOrder
-  patientName?: Prisma.SortOrder
+  verificationStatus?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  verifiedBy?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -570,11 +706,17 @@ export type BloodRequestMinOrderByAggregateInput = {
   units?: Prisma.SortOrder
   hospitalName?: Prisma.SortOrder
   hospitalAddress?: Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrder
+  patientName?: Prisma.SortOrder
+  contactNumber?: Prisma.SortOrder
   requiredDate?: Prisma.SortOrder
   urgency?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  contactNumber?: Prisma.SortOrder
-  patientName?: Prisma.SortOrder
+  verificationStatus?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  verifiedBy?: Prisma.SortOrder
+  rejectionReason?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -583,6 +725,8 @@ export type BloodRequestMinOrderByAggregateInput = {
 
 export type BloodRequestSumOrderByAggregateInput = {
   units?: Prisma.SortOrder
+  hospitalLatitude?: Prisma.SortOrder
+  hospitalLongitude?: Prisma.SortOrder
 }
 
 export type BloodRequestScalarRelationFilter = {
@@ -612,12 +756,24 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type EnumUrgencyLevelFieldUpdateOperationsInput = {
   set?: $Enums.UrgencyLevel
 }
 
 export type EnumBloodRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.BloodRequestStatus
+}
+
+export type EnumVerificationStatusFieldUpdateOperationsInput = {
+  set?: $Enums.VerificationStatus
 }
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -700,11 +856,17 @@ export type BloodRequestCreateWithoutDonationsInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -720,11 +882,17 @@ export type BloodRequestUncheckedCreateWithoutDonationsInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -754,11 +922,17 @@ export type BloodRequestUpdateWithoutDonationsInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -774,11 +948,17 @@ export type BloodRequestUncheckedUpdateWithoutDonationsInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -792,11 +972,17 @@ export type BloodRequestCreateWithoutPaymentInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -812,11 +998,17 @@ export type BloodRequestUncheckedCreateWithoutPaymentInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -846,11 +1038,17 @@ export type BloodRequestUpdateWithoutPaymentInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -866,11 +1064,17 @@ export type BloodRequestUncheckedUpdateWithoutPaymentInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -884,11 +1088,17 @@ export type BloodRequestCreateWithoutRecipientInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -903,11 +1113,17 @@ export type BloodRequestUncheckedCreateWithoutRecipientInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -952,11 +1168,17 @@ export type BloodRequestScalarWhereInput = {
   units?: Prisma.IntFilter<"BloodRequest"> | number
   hospitalName?: Prisma.StringFilter<"BloodRequest"> | string
   hospitalAddress?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  hospitalLatitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  hospitalLongitude?: Prisma.FloatNullableFilter<"BloodRequest"> | number | null
+  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   requiredDate?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   urgency?: Prisma.EnumUrgencyLevelFilter<"BloodRequest"> | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFilter<"BloodRequest"> | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
-  patientName?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFilter<"BloodRequest"> | $Enums.VerificationStatus
+  verifiedAt?: Prisma.DateTimeNullableFilter<"BloodRequest"> | Date | string | null
+  verifiedBy?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
+  rejectionReason?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   notes?: Prisma.StringNullableFilter<"BloodRequest"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BloodRequest"> | Date | string
@@ -969,11 +1191,17 @@ export type BloodRequestCreateManyRecipientInput = {
   units?: number
   hospitalName: string
   hospitalAddress?: string | null
+  hospitalLatitude?: number | null
+  hospitalLongitude?: number | null
+  patientName?: string | null
+  contactNumber?: string | null
   requiredDate: Date | string
   urgency?: $Enums.UrgencyLevel
   status?: $Enums.BloodRequestStatus
-  contactNumber?: string | null
-  patientName?: string | null
+  verificationStatus?: $Enums.VerificationStatus
+  verifiedAt?: Date | string | null
+  verifiedBy?: string | null
+  rejectionReason?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -986,11 +1214,17 @@ export type BloodRequestUpdateWithoutRecipientInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1005,11 +1239,17 @@ export type BloodRequestUncheckedUpdateWithoutRecipientInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1024,11 +1264,17 @@ export type BloodRequestUncheckedUpdateManyWithoutRecipientInput = {
   units?: Prisma.IntFieldUpdateOperationsInput | number
   hospitalName?: Prisma.StringFieldUpdateOperationsInput | string
   hospitalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hospitalLatitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  hospitalLongitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   requiredDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   urgency?: Prisma.EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
   status?: Prisma.EnumBloodRequestStatusFieldUpdateOperationsInput | $Enums.BloodRequestStatus
-  contactNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  patientName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1073,11 +1319,17 @@ export type BloodRequestSelect<ExtArgs extends runtime.Types.Extensions.Internal
   units?: boolean
   hospitalName?: boolean
   hospitalAddress?: boolean
+  hospitalLatitude?: boolean
+  hospitalLongitude?: boolean
+  patientName?: boolean
+  contactNumber?: boolean
   requiredDate?: boolean
   urgency?: boolean
   status?: boolean
-  contactNumber?: boolean
-  patientName?: boolean
+  verificationStatus?: boolean
+  verifiedAt?: boolean
+  verifiedBy?: boolean
+  rejectionReason?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1095,11 +1347,17 @@ export type BloodRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   units?: boolean
   hospitalName?: boolean
   hospitalAddress?: boolean
+  hospitalLatitude?: boolean
+  hospitalLongitude?: boolean
+  patientName?: boolean
+  contactNumber?: boolean
   requiredDate?: boolean
   urgency?: boolean
   status?: boolean
-  contactNumber?: boolean
-  patientName?: boolean
+  verificationStatus?: boolean
+  verifiedAt?: boolean
+  verifiedBy?: boolean
+  rejectionReason?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1114,11 +1372,17 @@ export type BloodRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   units?: boolean
   hospitalName?: boolean
   hospitalAddress?: boolean
+  hospitalLatitude?: boolean
+  hospitalLongitude?: boolean
+  patientName?: boolean
+  contactNumber?: boolean
   requiredDate?: boolean
   urgency?: boolean
   status?: boolean
-  contactNumber?: boolean
-  patientName?: boolean
+  verificationStatus?: boolean
+  verifiedAt?: boolean
+  verifiedBy?: boolean
+  rejectionReason?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1133,18 +1397,24 @@ export type BloodRequestSelectScalar = {
   units?: boolean
   hospitalName?: boolean
   hospitalAddress?: boolean
+  hospitalLatitude?: boolean
+  hospitalLongitude?: boolean
+  patientName?: boolean
+  contactNumber?: boolean
   requiredDate?: boolean
   urgency?: boolean
   status?: boolean
-  contactNumber?: boolean
-  patientName?: boolean
+  verificationStatus?: boolean
+  verifiedAt?: boolean
+  verifiedBy?: boolean
+  rejectionReason?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type BloodRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipientId" | "bloodGroup" | "units" | "hospitalName" | "hospitalAddress" | "requiredDate" | "urgency" | "status" | "contactNumber" | "patientName" | "notes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bloodRequest"]>
+export type BloodRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipientId" | "bloodGroup" | "units" | "hospitalName" | "hospitalAddress" | "hospitalLatitude" | "hospitalLongitude" | "patientName" | "contactNumber" | "requiredDate" | "urgency" | "status" | "verificationStatus" | "verifiedAt" | "verifiedBy" | "rejectionReason" | "notes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bloodRequest"]>
 export type BloodRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   recipient?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   donations?: boolean | Prisma.BloodRequest$donationsArgs<ExtArgs>
@@ -1172,11 +1442,17 @@ export type $BloodRequestPayload<ExtArgs extends runtime.Types.Extensions.Intern
     units: number
     hospitalName: string
     hospitalAddress: string | null
+    hospitalLatitude: number | null
+    hospitalLongitude: number | null
+    patientName: string | null
+    contactNumber: string | null
     requiredDate: Date
     urgency: $Enums.UrgencyLevel
     status: $Enums.BloodRequestStatus
-    contactNumber: string | null
-    patientName: string | null
+    verificationStatus: $Enums.VerificationStatus
+    verifiedAt: Date | null
+    verifiedBy: string | null
+    rejectionReason: string | null
     notes: string | null
     createdAt: Date
     updatedAt: Date
@@ -1613,11 +1889,17 @@ export interface BloodRequestFieldRefs {
   readonly units: Prisma.FieldRef<"BloodRequest", 'Int'>
   readonly hospitalName: Prisma.FieldRef<"BloodRequest", 'String'>
   readonly hospitalAddress: Prisma.FieldRef<"BloodRequest", 'String'>
+  readonly hospitalLatitude: Prisma.FieldRef<"BloodRequest", 'Float'>
+  readonly hospitalLongitude: Prisma.FieldRef<"BloodRequest", 'Float'>
+  readonly patientName: Prisma.FieldRef<"BloodRequest", 'String'>
+  readonly contactNumber: Prisma.FieldRef<"BloodRequest", 'String'>
   readonly requiredDate: Prisma.FieldRef<"BloodRequest", 'DateTime'>
   readonly urgency: Prisma.FieldRef<"BloodRequest", 'UrgencyLevel'>
   readonly status: Prisma.FieldRef<"BloodRequest", 'BloodRequestStatus'>
-  readonly contactNumber: Prisma.FieldRef<"BloodRequest", 'String'>
-  readonly patientName: Prisma.FieldRef<"BloodRequest", 'String'>
+  readonly verificationStatus: Prisma.FieldRef<"BloodRequest", 'VerificationStatus'>
+  readonly verifiedAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>
+  readonly verifiedBy: Prisma.FieldRef<"BloodRequest", 'String'>
+  readonly rejectionReason: Prisma.FieldRef<"BloodRequest", 'String'>
   readonly notes: Prisma.FieldRef<"BloodRequest", 'String'>
   readonly createdAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BloodRequest", 'DateTime'>

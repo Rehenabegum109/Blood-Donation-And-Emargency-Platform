@@ -124,9 +124,65 @@ const refreshAccessToken = catchAsync(
     });
   }
 );
+const forgotPassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload =
+      authValidation.ForgetPasswordZodSchema.safeParse(req.body);
+
+    if (!payload.success) {
+      const errorMessage = payload.error.issues
+        .map((issue) => issue.message)
+        .join(", ");
+
+      throw new Error(errorMessage);
+    }
+
+    const result = await AuthService.forgotPassword(
+      payload.data.email
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: result.message,
+      data: null,
+    });
+  }
+);
+
+
+const resetPassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload =
+      authValidation.ResetPasswordZodSchema.safeParse(req.body);
+
+    if (!payload.success) {
+      const errorMessage = payload.error.issues
+        .map((issue) => issue.message)
+        .join(", ");
+
+      throw new Error(errorMessage);
+    }
+
+    const result = await AuthService.resetPassword(
+      payload.data.email,
+      payload.data.otp,
+      payload.data.newPassword
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: result.message,
+      data: null,
+    });
+  }
+);
 export const AuthController = {
   register,
   verifyEmail,
   loginUser,
   refreshAccessToken,
+  forgotPassword,
+  resetPassword,
 };

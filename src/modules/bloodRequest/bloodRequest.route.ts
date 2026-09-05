@@ -30,6 +30,19 @@ router.get(
   auth(Role.ADMIN, Role.DONOR, Role.RECIPIENT),
   BloodRequestController.searchBloodRequests
 );
+router.patch(
+  "/:id/verify",
+  auth(Role.ADMIN),
+  BloodRequestController.verifyBloodRequest
+);
+router.patch(
+  "/:id/reject",
+  auth(Role.ADMIN),
+  validateRequest(
+    bloodRequestValidation.RejectBloodRequestZodSchema
+  ),
+  BloodRequestController.rejectBloodRequest
+);
 
 router.get(
   "/:id",

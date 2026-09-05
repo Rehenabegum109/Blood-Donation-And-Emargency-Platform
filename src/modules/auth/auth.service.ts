@@ -1,13 +1,14 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 
-import { Role, AccountStatus } from "../../generated/prisma/enums";
+import { Role, AccountStatus, AuditAction } from "../../generated/prisma/enums";
 import jwt from "jsonwebtoken";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../utils/redis";
-import { sendEmailVerificationEmail, sendWelcomeEmail } from "../../utils/email";
+import { sendEmailVerificationEmail, sendForgotPasswordEmail, sendResetPasswordEmail, sendWelcomeEmail } from "../../utils/email";
 import { IRegisterPayload } from "./auth.interface";
+import { createAuditLog } from "../../utils/auditLog";
 
 
 const register = async (payload: IRegisterPayload) => {
@@ -142,7 +143,6 @@ const loginUser = async (payload: {
 }) => {
   const email = payload.email.trim().toLowerCase();
 
-
   const user = await prisma.user.findUnique({
     where: {
       email,
@@ -212,7 +212,21 @@ const loginUser = async (payload: {
     },
   });
 
-  // 8. Remove password from response
+  // 8. Audit log
+  await createAuditLog
+  ({
+    userId: user.id,
+    action: AuditAction.LOGIN,
+    entity: "User",
+    entityId: user.id,
+    details: {
+      email: user.email,
+      role: user.role,
+      message: "User logged in successfully",
+    },
+  });
+
+  // 9. Remove password from response
   const { password, ...userWithoutPassword } = user;
 
   return {
@@ -269,9 +283,120 @@ const refreshAccessToken = async (refreshToken: string) => {
     accessToken,
   };
 };
+const forgotPassword = async (email: string) => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email: normalizedEmail,
+    },
+  });
+
+  // Security: email exists কিনা প্রকাশ না করাই ভালো
+  if (!user) {
+    return {
+      message: "If this email is registered, a password reset OTP has been sent",
+    };
+  }
+
+  if (user.status !== AccountStatus.ACTIVE) {
+    throw new Error("Your account is not active");
+  }
+
+  const otp = crypto
+    .randomInt(100000, 1000000)
+    .toString();
+
+  await redisClient.set(
+    `reset-password:${normalizedEmail}`,
+    otp,
+    {
+      EX: 300,
+    }
+  );
+
+  await sendForgotPasswordEmail(
+  normalizedEmail,
+  user.name,
+  otp
+);
+
+  return {
+    message: "Password reset OTP sent successfully",
+  };
+};
+
+
+const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email: normalizedEmail,
+    },
+  });
+
+  if (!user) {
+    throw new Error("Invalid email or OTP");
+  }
+
+  const storedOtp = await redisClient.get(
+    `reset-password:${normalizedEmail}`
+  );
+
+  if (!storedOtp) {
+    throw new Error("OTP expired or not found");
+  }
+
+  if (storedOtp !== otp) {
+    throw new Error("Invalid OTP");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    10
+  );
+
+  await prisma.user.update({
+    where: {
+      email: normalizedEmail,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  // OTP delete
+  await redisClient.del(
+    `reset-password:${normalizedEmail}`
+  );
+
+  // Invalidate old refresh tokens
+  await prisma.refreshToken.deleteMany({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  // Send password reset success email
+  await sendResetPasswordEmail(
+    normalizedEmail,
+    user.name
+  );
+
+  return {
+    message: "Password reset successfully",
+  };
+};
 export const AuthService = {
   register,
   verifyEmail,
   loginUser,
   refreshAccessToken,
+  forgotPassword,
+  resetPassword
 };

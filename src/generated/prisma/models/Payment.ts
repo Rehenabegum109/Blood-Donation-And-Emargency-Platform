@@ -41,6 +41,7 @@ export type PaymentMinAggregateOutputType = {
   currency: string | null
   method: $Enums.PaymentMethod | null
   status: $Enums.PaymentStatus | null
+  bkashPaymentId: string | null
   transactionId: string | null
   paidAt: Date | null
   createdAt: Date | null
@@ -54,6 +55,7 @@ export type PaymentMaxAggregateOutputType = {
   currency: string | null
   method: $Enums.PaymentMethod | null
   status: $Enums.PaymentStatus | null
+  bkashPaymentId: string | null
   transactionId: string | null
   paidAt: Date | null
   createdAt: Date | null
@@ -67,6 +69,7 @@ export type PaymentCountAggregateOutputType = {
   currency: number
   method: number
   status: number
+  bkashPaymentId: number
   transactionId: number
   gatewayResponse: number
   paidAt: number
@@ -91,6 +94,7 @@ export type PaymentMinAggregateInputType = {
   currency?: true
   method?: true
   status?: true
+  bkashPaymentId?: true
   transactionId?: true
   paidAt?: true
   createdAt?: true
@@ -104,6 +108,7 @@ export type PaymentMaxAggregateInputType = {
   currency?: true
   method?: true
   status?: true
+  bkashPaymentId?: true
   transactionId?: true
   paidAt?: true
   createdAt?: true
@@ -117,6 +122,7 @@ export type PaymentCountAggregateInputType = {
   currency?: true
   method?: true
   status?: true
+  bkashPaymentId?: true
   transactionId?: true
   gatewayResponse?: true
   paidAt?: true
@@ -218,6 +224,7 @@ export type PaymentGroupByOutputType = {
   currency: string
   method: $Enums.PaymentMethod
   status: $Enums.PaymentStatus
+  bkashPaymentId: string | null
   transactionId: string | null
   gatewayResponse: runtime.JsonValue | null
   paidAt: Date | null
@@ -255,6 +262,7 @@ export type PaymentWhereInput = {
   currency?: Prisma.StringFilter<"Payment"> | string
   method?: Prisma.EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.StringNullableFilter<"Payment"> | string | null
   transactionId?: Prisma.StringNullableFilter<"Payment"> | string | null
   gatewayResponse?: Prisma.JsonNullableFilter<"Payment">
   paidAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null
@@ -270,6 +278,7 @@ export type PaymentOrderByWithRelationInput = {
   currency?: Prisma.SortOrder
   method?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  bkashPaymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   gatewayResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -281,6 +290,7 @@ export type PaymentOrderByWithRelationInput = {
 export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   bloodRequestId?: string
+  bkashPaymentId?: string
   transactionId?: string
   AND?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
   OR?: Prisma.PaymentWhereInput[]
@@ -294,7 +304,7 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Payment"> | Date | string
   bloodRequest?: Prisma.XOR<Prisma.BloodRequestScalarRelationFilter, Prisma.BloodRequestWhereInput>
-}, "id" | "bloodRequestId" | "transactionId">
+}, "id" | "bloodRequestId" | "bkashPaymentId" | "transactionId">
 
 export type PaymentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -303,6 +313,7 @@ export type PaymentOrderByWithAggregationInput = {
   currency?: Prisma.SortOrder
   method?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  bkashPaymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
   gatewayResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -325,6 +336,7 @@ export type PaymentScalarWhereWithAggregatesInput = {
   currency?: Prisma.StringWithAggregatesFilter<"Payment"> | string
   method?: Prisma.EnumPaymentMethodWithAggregatesFilter<"Payment"> | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusWithAggregatesFilter<"Payment"> | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null
   transactionId?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null
   gatewayResponse?: Prisma.JsonNullableWithAggregatesFilter<"Payment">
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
@@ -338,6 +350,7 @@ export type PaymentCreateInput = {
   currency?: string
   method?: $Enums.PaymentMethod
   status?: $Enums.PaymentStatus
+  bkashPaymentId?: string | null
   transactionId?: string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Date | string | null
@@ -353,6 +366,7 @@ export type PaymentUncheckedCreateInput = {
   currency?: string
   method?: $Enums.PaymentMethod
   status?: $Enums.PaymentStatus
+  bkashPaymentId?: string | null
   transactionId?: string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Date | string | null
@@ -366,6 +380,7 @@ export type PaymentUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -381,6 +396,7 @@ export type PaymentUncheckedUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -395,6 +411,7 @@ export type PaymentCreateManyInput = {
   currency?: string
   method?: $Enums.PaymentMethod
   status?: $Enums.PaymentStatus
+  bkashPaymentId?: string | null
   transactionId?: string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Date | string | null
@@ -408,6 +425,7 @@ export type PaymentUpdateManyMutationInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -422,6 +440,7 @@ export type PaymentUncheckedUpdateManyInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -441,6 +460,7 @@ export type PaymentCountOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   method?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  bkashPaymentId?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
   gatewayResponse?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
@@ -459,6 +479,7 @@ export type PaymentMaxOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   method?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  bkashPaymentId?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -472,6 +493,7 @@ export type PaymentMinOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   method?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  bkashPaymentId?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -536,6 +558,7 @@ export type PaymentCreateWithoutBloodRequestInput = {
   currency?: string
   method?: $Enums.PaymentMethod
   status?: $Enums.PaymentStatus
+  bkashPaymentId?: string | null
   transactionId?: string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Date | string | null
@@ -549,6 +572,7 @@ export type PaymentUncheckedCreateWithoutBloodRequestInput = {
   currency?: string
   method?: $Enums.PaymentMethod
   status?: $Enums.PaymentStatus
+  bkashPaymentId?: string | null
   transactionId?: string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Date | string | null
@@ -578,6 +602,7 @@ export type PaymentUpdateWithoutBloodRequestInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -591,6 +616,7 @@ export type PaymentUncheckedUpdateWithoutBloodRequestInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
   status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -607,6 +633,7 @@ export type PaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   currency?: boolean
   method?: boolean
   status?: boolean
+  bkashPaymentId?: boolean
   transactionId?: boolean
   gatewayResponse?: boolean
   paidAt?: boolean
@@ -622,6 +649,7 @@ export type PaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   currency?: boolean
   method?: boolean
   status?: boolean
+  bkashPaymentId?: boolean
   transactionId?: boolean
   gatewayResponse?: boolean
   paidAt?: boolean
@@ -637,6 +665,7 @@ export type PaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   currency?: boolean
   method?: boolean
   status?: boolean
+  bkashPaymentId?: boolean
   transactionId?: boolean
   gatewayResponse?: boolean
   paidAt?: boolean
@@ -652,6 +681,7 @@ export type PaymentSelectScalar = {
   currency?: boolean
   method?: boolean
   status?: boolean
+  bkashPaymentId?: boolean
   transactionId?: boolean
   gatewayResponse?: boolean
   paidAt?: boolean
@@ -659,7 +689,7 @@ export type PaymentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bloodRequestId" | "amount" | "currency" | "method" | "status" | "transactionId" | "gatewayResponse" | "paidAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bloodRequestId" | "amount" | "currency" | "method" | "status" | "bkashPaymentId" | "transactionId" | "gatewayResponse" | "paidAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
 export type PaymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bloodRequest?: boolean | Prisma.BloodRequestDefaultArgs<ExtArgs>
 }
@@ -682,6 +712,7 @@ export type $PaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     currency: string
     method: $Enums.PaymentMethod
     status: $Enums.PaymentStatus
+    bkashPaymentId: string | null
     transactionId: string | null
     gatewayResponse: runtime.JsonValue | null
     paidAt: Date | null
@@ -1117,6 +1148,7 @@ export interface PaymentFieldRefs {
   readonly currency: Prisma.FieldRef<"Payment", 'String'>
   readonly method: Prisma.FieldRef<"Payment", 'PaymentMethod'>
   readonly status: Prisma.FieldRef<"Payment", 'PaymentStatus'>
+  readonly bkashPaymentId: Prisma.FieldRef<"Payment", 'String'>
   readonly transactionId: Prisma.FieldRef<"Payment", 'String'>
   readonly gatewayResponse: Prisma.FieldRef<"Payment", 'Json'>
   readonly paidAt: Prisma.FieldRef<"Payment", 'DateTime'>

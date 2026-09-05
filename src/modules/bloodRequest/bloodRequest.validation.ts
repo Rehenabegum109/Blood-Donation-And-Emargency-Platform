@@ -64,7 +64,14 @@ const UpdateBloodRequestZodSchema = z.object({
   notes: z.string().optional(),
 });
 
+const RejectBloodRequestZodSchema = z.object({
+  rejectionReason: z
+    .string()
+    .min(5, "Rejection reason must be at least 5 characters")
+    .max(500, "Rejection reason cannot exceed 500 characters"),
+});
 export const bloodRequestValidation = {
   CreateBloodRequestZodSchema,
   UpdateBloodRequestZodSchema,
+  RejectBloodRequestZodSchema,
 };

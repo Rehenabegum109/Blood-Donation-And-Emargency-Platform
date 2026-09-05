@@ -1,13 +1,20 @@
 model Donor {
   id               String     @id @default(uuid())
   userId           String     @unique
-  bloodGroup       String
+  bloodGroup       BloodGroup
   dateOfBirth      DateTime?
   address          String?
+  latitude         Float?
+  longitude        Float?
   lastDonationDate DateTime?
   isAvailable      Boolean    @default(true)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+
   donations        Donation[]
   user             User       @relation(fields: [userId], references: [id])
+
+  @@index([bloodGroup])
+  @@index([isAvailable])
+  @@index([bloodGroup, isAvailable])
 }
