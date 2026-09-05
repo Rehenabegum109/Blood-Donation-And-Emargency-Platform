@@ -5,3 +5,6 @@ export interface IRegisterPayload {
 phone?: string | undefined;
 location?: string | undefined;
 }
+export interface IGoogleAuthPayload {
+  credential: string;
+}

@@ -29,6 +29,7 @@ export type UserMinAggregateOutputType = {
   name: string | null
   email: string | null
   password: string | null
+  googleId: string | null
   role: $Enums.Role | null
   status: $Enums.AccountStatus | null
   phone: string | null
@@ -45,6 +46,7 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   email: string | null
   password: string | null
+  googleId: string | null
   role: $Enums.Role | null
   status: $Enums.AccountStatus | null
   phone: string | null
@@ -61,6 +63,7 @@ export type UserCountAggregateOutputType = {
   name: number
   email: number
   password: number
+  googleId: number
   role: number
   status: number
   phone: number
@@ -79,6 +82,7 @@ export type UserMinAggregateInputType = {
   name?: true
   email?: true
   password?: true
+  googleId?: true
   role?: true
   status?: true
   phone?: true
@@ -95,6 +99,7 @@ export type UserMaxAggregateInputType = {
   name?: true
   email?: true
   password?: true
+  googleId?: true
   role?: true
   status?: true
   phone?: true
@@ -111,6 +116,7 @@ export type UserCountAggregateInputType = {
   name?: true
   email?: true
   password?: true
+  googleId?: true
   role?: true
   status?: true
   phone?: true
@@ -200,6 +206,7 @@ export type UserGroupByOutputType = {
   name: string
   email: string
   password: string | null
+  googleId: string | null
   role: $Enums.Role
   status: $Enums.AccountStatus
   phone: string | null
@@ -237,6 +244,7 @@ export type UserWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringNullableFilter<"User"> | string | null
+  googleId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   status?: Prisma.EnumAccountStatusFilter<"User"> | $Enums.AccountStatus
   phone?: Prisma.StringNullableFilter<"User"> | string | null
@@ -257,6 +265,7 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
+  googleId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -275,6 +284,7 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
+  googleId?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -293,13 +303,14 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   bloodRequests?: Prisma.BloodRequestListRelationFilter
   donor?: Prisma.XOR<Prisma.DonorNullableScalarRelationFilter, Prisma.DonorWhereInput> | null
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
-}, "id" | "email">
+}, "id" | "email" | "googleId">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
+  googleId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -322,6 +333,7 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  googleId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   status?: Prisma.EnumAccountStatusWithAggregatesFilter<"User"> | $Enums.AccountStatus
   phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -338,6 +350,7 @@ export type UserCreateInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -358,6 +371,7 @@ export type UserUncheckedCreateInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -378,6 +392,7 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -398,6 +413,7 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -418,6 +434,7 @@ export type UserCreateManyInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -434,6 +451,7 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -450,6 +468,7 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -476,6 +495,7 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  googleId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -492,6 +512,7 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  googleId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -508,6 +529,7 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
+  googleId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
@@ -590,6 +612,7 @@ export type UserCreateWithoutAuditLogsInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -609,6 +632,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -644,6 +668,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -663,6 +688,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -682,6 +708,7 @@ export type UserCreateWithoutBloodRequestsInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -701,6 +728,7 @@ export type UserUncheckedCreateWithoutBloodRequestsInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -736,6 +764,7 @@ export type UserUpdateWithoutBloodRequestsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -755,6 +784,7 @@ export type UserUncheckedUpdateWithoutBloodRequestsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -774,6 +804,7 @@ export type UserCreateWithoutDonorInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -793,6 +824,7 @@ export type UserUncheckedCreateWithoutDonorInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -828,6 +860,7 @@ export type UserUpdateWithoutDonorInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -847,6 +880,7 @@ export type UserUncheckedUpdateWithoutDonorInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -866,6 +900,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -885,6 +920,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   name: string
   email: string
   password?: string | null
+  googleId?: string | null
   role?: $Enums.Role
   status?: $Enums.AccountStatus
   phone?: string | null
@@ -920,6 +956,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -939,6 +976,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   status?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1007,6 +1045,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   email?: boolean
   password?: boolean
+  googleId?: boolean
   role?: boolean
   status?: boolean
   phone?: boolean
@@ -1028,6 +1067,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   email?: boolean
   password?: boolean
+  googleId?: boolean
   role?: boolean
   status?: boolean
   phone?: boolean
@@ -1044,6 +1084,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   email?: boolean
   password?: boolean
+  googleId?: boolean
   role?: boolean
   status?: boolean
   phone?: boolean
@@ -1060,6 +1101,7 @@ export type UserSelectScalar = {
   name?: boolean
   email?: boolean
   password?: boolean
+  googleId?: boolean
   role?: boolean
   status?: boolean
   phone?: boolean
@@ -1071,7 +1113,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "role" | "status" | "phone" | "location" | "profileImage" | "emailVerified" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "googleId" | "role" | "status" | "phone" | "location" | "profileImage" | "emailVerified" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   bloodRequests?: boolean | Prisma.User$bloodRequestsArgs<ExtArgs>
@@ -1095,6 +1137,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string
     email: string
     password: string | null
+    googleId: string | null
     role: $Enums.Role
     status: $Enums.AccountStatus
     phone: string | null
@@ -1535,6 +1578,7 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
+  readonly googleId: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly status: Prisma.FieldRef<"User", 'AccountStatus'>
   readonly phone: Prisma.FieldRef<"User", 'String'>

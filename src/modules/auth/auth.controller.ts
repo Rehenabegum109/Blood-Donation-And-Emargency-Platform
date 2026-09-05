@@ -6,6 +6,8 @@ import { authValidation } from "./auth.validation";
 import { sendResponse } from "../../utils/sendResponse";
 
 import { catchAsync } from "../../utils/catchAsync";
+import { IGoogleAuthPayload } from "./auth.interface";
+import config from "../../config";
 
 const register = catchAsync(
   async (req: Request, res: Response) => {
@@ -101,6 +103,58 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     },
   });
 });
+
+const googleLogin = catchAsync(async (req: Request, res: Response) => {
+
+  const payload = req.body as IGoogleAuthPayload;
+
+  const result = await AuthService.googleLogin(payload);
+
+  // ==================== Set Access Token Cookie ====================
+
+  res.cookie("accessToken", result.accessToken, {
+    httpOnly: true,
+
+    secure: config.node_env === "production",
+
+    sameSite:
+      config.node_env === "production"
+        ? "none"
+        : "lax",
+
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
+  // ==================== Set Refresh Token Cookie ====================
+
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+
+    secure: config.node_env === "production",
+
+    sameSite:
+      config.node_env === "production"
+        ? "none"
+        : "lax",
+
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  // ==================== Send Response ====================
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+
+    success: true,
+
+    message: "Google login successful",
+
+    data: {
+      user: result.user,
+    },
+  });
+});
+
 const refreshAccessToken = catchAsync(
   async (req: Request, res: Response) => {
     const refreshToken = req.cookies?.refreshToken;
@@ -182,6 +236,7 @@ export const AuthController = {
   register,
   verifyEmail,
   loginUser,
+  googleLogin,
   refreshAccessToken,
   forgotPassword,
   resetPassword,

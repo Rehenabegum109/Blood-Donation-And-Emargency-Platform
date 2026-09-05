@@ -1,16 +1,21 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-
+import { OAuth2Client } from "google-auth-library";
 import { Role, AccountStatus, AuditAction } from "../../generated/prisma/enums";
 import jwt from "jsonwebtoken";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../utils/redis";
 import { sendEmailVerificationEmail, sendForgotPasswordEmail, sendResetPasswordEmail, sendWelcomeEmail } from "../../utils/email";
-import { IRegisterPayload } from "./auth.interface";
+import { IGoogleAuthPayload, IRegisterPayload } from "./auth.interface";
 import { createAuditLog } from "../../utils/auditLog";
 
 
+const googleClient = new OAuth2Client(
+  config.google_client_id,
+  config.google_client_secret,
+  config.google_callback_url
+);
 const register = async (payload: IRegisterPayload) => {
   const email = payload.email.trim().toLowerCase();
 
@@ -235,6 +240,194 @@ const loginUser = async (payload: {
     user: userWithoutPassword,
   };
 };
+const googleLogin = async (
+  payload: IGoogleAuthPayload
+) => {
+  const { credential } = payload;
+
+  if (!credential) {
+    throw new Error("Google credential is required");
+  }
+
+  // ==================== Verify Google Credential ====================
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: config.google_client_id,
+  });
+
+  const googlePayload = ticket.getPayload();
+
+  if (!googlePayload) {
+    throw new Error("Invalid Google credential");
+  }
+
+  const googleId = googlePayload.sub;
+  const googleEmail = googlePayload.email;
+  const googleName = googlePayload.name;
+
+  // ==================== Validate Google Data ====================
+
+  if (!googleId) {
+    throw new Error("Google user ID not found");
+  }
+
+  if (!googleEmail) {
+    throw new Error("Google account email not found");
+  }
+
+  const email = googleEmail
+    .trim()
+    .toLowerCase();
+
+  // ==================== Find Existing User ====================
+
+  let user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  // ==================== Existing User ====================
+
+  if (user) {
+
+    // Check blocked user
+    if (user.status === AccountStatus.BLOCKED) {
+      throw new Error("Your account is blocked");
+    }
+
+    // Check deleted user
+    if (
+      user.status === AccountStatus.DELETED ||
+      user.deletedAt
+    ) {
+      throw new Error("Your account is deleted");
+    }
+
+    // ==================== Link Google Account ====================
+
+    if (!user.googleId) {
+      user = await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+
+        data: {
+          googleId,
+          emailVerified: true,
+        },
+      });
+    }
+
+    // ==================== Check Google Account ====================
+
+    else if (user.googleId !== googleId) {
+      throw new Error(
+        "This email is already linked with another Google account"
+      );
+    }
+  }
+
+  // ==================== New Google User ====================
+
+  else {
+
+    const name: string =
+      googleName ||
+      email.split("@")[0] ||
+      "Google User";
+
+    user = await prisma.user.create({
+      data: {
+        name,
+        email,
+
+        // Google users don't need password
+        password: null,
+
+        // Save Google unique ID
+        googleId,
+
+        // Google already verified the email
+        emailVerified: true,
+
+        // New Google users become Recipient
+        role: Role.RECIPIENT,
+
+        status: AccountStatus.ACTIVE,
+      },
+    });
+  }
+
+  // ==================== Create Access Token ====================
+
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      role: user.role,
+    },
+    config.jwt_access_secret as string,
+    {
+      expiresIn: 60 * 60 * 24,
+    }
+  );
+
+  // ==================== Create Refresh Token ====================
+
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+      role: user.role,
+    },
+    config.jwt_refresh_secret as string,
+    {
+      expiresIn: 60 * 60 * 24 * 7,
+    }
+  );
+
+  // ==================== Save Refresh Token ====================
+
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      token: refreshToken,
+      expiresAt: new Date(
+        Date.now() +
+          1000 * 60 * 60 * 24 * 7
+      ),
+    },
+  });
+
+  // ==================== Audit Log ====================
+
+  await createAuditLog({
+    userId: user.id,
+    action: AuditAction.LOGIN,
+    entity: "User",
+    entityId: user.id,
+    details: {
+      email: user.email,
+      role: user.role,
+      loginMethod: "GOOGLE",
+    },
+  });
+
+  // ==================== Remove Password ====================
+
+  const {
+    password,
+    ...userWithoutPassword
+  } = user;
+
+  // ==================== Return ====================
+
+  return {
+    user: userWithoutPassword,
+    accessToken,
+    refreshToken,
+  };
+};
 const refreshAccessToken = async (refreshToken: string) => {
   if (!refreshToken) {
     throw new Error("Refresh token is required");
@@ -396,6 +589,7 @@ export const AuthService = {
   register,
   verifyEmail,
   loginUser,
+  googleLogin,
   refreshAccessToken,
   forgotPassword,
   resetPassword

@@ -63,11 +63,16 @@ const VerifyEmailZodSchema = z.object({
     .length(6, "OTP must be 6 digits")
     .regex(/^\d+$/, "OTP must contain only numbers"),
 });
-
+const GoogleLoginZodSchema = z.object({
+  credential: z
+    .string()
+    .min(1, "Google credential is required"),
+});
 export const authValidation = {
   RegisterZodSchema,
   LoginZodSchema,
   ForgetPasswordZodSchema,
   ResetPasswordZodSchema,
   VerifyEmailZodSchema,
+  GoogleLoginZodSchema
 };

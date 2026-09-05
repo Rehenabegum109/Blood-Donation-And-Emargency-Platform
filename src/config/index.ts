@@ -4,7 +4,7 @@ dotenv.config();
 
 const config = {
   port: process.env.PORT || 5000,
-
+node_env: process.env.NODE_ENV,
   database_url: process.env.DATABASE_URL,
 
 
@@ -27,7 +27,10 @@ bkash_app_secret: process.env.BKASH_APP_SECRET!,
 bkash_base_url: process.env.BKASH_BASE_URL!,
 backend_url: process.env.BKASH_BACKEND_URI!,
 bkash_agreement_id: process.env.BKASH_AGREEMENT_ID!,
-bkash_callback_url: process.env.BKASH_CALLBACK_URL!
+bkash_callback_url: process.env.BKASH_CALLBACK_URL!,
+	google_client_id: process.env.GOOGLE_CLIENT_ID!,
+google_client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+google_callback_url: process.env.GOOGLE_CALLBACK_URL!,
 };
 
 export default config;

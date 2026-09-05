@@ -3,42 +3,6 @@ import { prisma } from "../../lib/prisma";
 import { createAuditLog } from "../../utils/auditLog";
 import { ICreateBloodRequestPayload, IUpdateBloodRequestPayload } from "./bloodRequest.interface";
 
-// const createBloodRequest = async (
-//   recipientId: string,
-//   payload: ICreateBloodRequestPayload
-// ) => {
-//   const user = await prisma.user.findUnique({
-//     where: {
-//       id: recipientId,
-//     },
-//   });
-
-//   if (!user) {
-//     throw new Error("User not found");
-//   }
-
-//   if (user.role !== "RECIPIENT") {
-//     throw new Error("Only recipients can create blood requests");
-//   }
-
-//   const bloodRequest = await prisma.bloodRequest.create({
-//     data: {
-//       recipientId,
-//       bloodGroup: payload.bloodGroup,
-//       units: payload.units ?? 1,
-//       hospitalName: payload.hospitalName,
-//       hospitalAddress: payload.hospitalAddress ?? null,
-//       requiredDate: payload.requiredDate,
-//       urgency: payload.urgency ?? "NORMAL",
-//       status: BloodRequestStatus.PENDING,
-//       contactNumber: payload.contactNumber ?? null,
-//       patientName: payload.patientName ?? null,
-//       notes: payload.notes ?? null,
-//     },
-//   });
-
-//   return bloodRequest;
-// };
 
 const createBloodRequest = async (
   recipientId: string,
