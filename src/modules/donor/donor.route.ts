@@ -26,7 +26,7 @@ router.get(
   DonorController.findNearbyDonors
 );
 
-// Update donor availability
+
 router.patch(
   "/availability",
   auth(Role.DONOR),

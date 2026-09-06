@@ -12,7 +12,7 @@ model Payment {
   transactionId  String? @unique
 
   gatewayResponse Json?
-
+receiptPdfUrl String?
   paidAt DateTime?
 
   createdAt DateTime @default(now())

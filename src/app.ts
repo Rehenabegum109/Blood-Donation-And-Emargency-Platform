@@ -8,9 +8,10 @@ import { notFound } from "./middlewares/notFound";
 
 import router from "./routes";
 import rateLimit from "express-rate-limit";
+import { setupSwagger } from "./docs/swagger";
 
 const app: Application = express();
-
+setupSwagger(app);
 app.use(helmet());
 app.use(
 	cors({
@@ -42,7 +43,14 @@ app.use("/api/v1", router);
 
 
 app.get("/", async (req: Request, res: Response) => {
-	
+  res.status(200).json({
+    success: true,
+    message: "BloodLink API is running",
+    data: {
+      version: "v1",
+      status: "healthy",
+    },
+  });
 });
 app.use(notFound);
 app.use(globalErrorHandler);

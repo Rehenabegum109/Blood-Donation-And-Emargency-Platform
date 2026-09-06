@@ -24,6 +24,8 @@ import type {
   IQuery,
 } from "./payment.interface";
 import { createAuditLog } from "../../utils/auditLog";
+import { uploadToCloudinary } from "../../lib/cloudinaryUpload";
+import { generatePaymentReceipt } from "../../utils/generatePaymentReceipt";
 
 
 
@@ -408,6 +410,7 @@ const executeBkashPayment = async (
       where: {
         bkashPaymentId: paymentID,
       },
+
       include: {
         bloodRequest: {
           select: {
@@ -439,6 +442,10 @@ const executeBkashPayment = async (
       "Completed" &&
     result.trxID
   ) {
+    // ------------------------------------------
+    // 1. Update payment as PAID
+    // ------------------------------------------
+
     const updatedPayment =
       await prisma.payment.update({
         where: {
@@ -461,22 +468,17 @@ const executeBkashPayment = async (
         },
       });
 
-    // Audit log
-    await createAuditLog({
-      userId:
-        payment.bloodRequest.recipientId,
+    // ------------------------------------------
+    // 2. Generate PDF Receipt
+    // ------------------------------------------
 
-      action:
-        AuditAction.PAYMENT,
+    const receiptPdf =
+      await generatePaymentReceipt({
+        paymentId:
+          updatedPayment.id,
 
-      entity: "Payment",
-
-      entityId:
-        updatedPayment.id,
-
-      details: {
-        bloodRequestId:
-          updatedPayment.bloodRequestId,
+        transactionId:
+          result.trxID,
 
         amount:
           updatedPayment.amount.toString(),
@@ -487,18 +489,83 @@ const executeBkashPayment = async (
         method:
           updatedPayment.method,
 
+        paidAt:
+          updatedPayment.paidAt!,
+
+        bloodRequestId:
+          updatedPayment.bloodRequestId,
+      });
+
+    // ------------------------------------------
+    // 3. Upload PDF to Cloudinary
+    // ------------------------------------------
+
+    const uploadedReceipt =
+      await uploadToCloudinary(
+        receiptPdf,
+        "bloodlink/payment-receipts"
+      );
+
+    // ------------------------------------------
+    // 4. Save PDF URL
+    // ------------------------------------------
+
+    const paymentWithReceipt =
+      await prisma.payment.update({
+        where: {
+          id: updatedPayment.id,
+        },
+
+        data: {
+          receiptPdfUrl:
+            uploadedReceipt.secure_url,
+        },
+      });
+
+    // ------------------------------------------
+    // 5. Audit log
+    // ------------------------------------------
+
+    await createAuditLog({
+      userId:
+        payment.bloodRequest.recipientId,
+
+      action:
+        AuditAction.PAYMENT,
+
+      entity: "Payment",
+
+      entityId:
+        paymentWithReceipt.id,
+
+      details: {
+        bloodRequestId:
+          paymentWithReceipt.bloodRequestId,
+
+        amount:
+          paymentWithReceipt.amount.toString(),
+
+        currency:
+          paymentWithReceipt.currency,
+
+        method:
+          paymentWithReceipt.method,
+
         status:
-          updatedPayment.status,
+          paymentWithReceipt.status,
 
         transactionId:
-          updatedPayment.transactionId,
+          paymentWithReceipt.transactionId,
+
+        receiptPdfUrl:
+          paymentWithReceipt.receiptPdfUrl,
 
         message:
-          "Payment completed successfully",
+          "Payment completed and receipt PDF uploaded successfully",
       },
     });
 
-    return updatedPayment;
+    return paymentWithReceipt;
   }
 
   return result;
@@ -969,6 +1036,94 @@ const getSinglePayment = async (
   return payment;
 };
 
+const uploadPaymentReceipt = async (
+  paymentId: string,
+  file: Express.Multer.File,
+  userId: string
+) => {
+
+  const payment = await prisma.payment.findUnique({
+    where: {
+      id: paymentId,
+    },
+    include: {
+      bloodRequest: {
+        select: {
+          recipientId: true,
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Payment Not Found"
+    );
+  }
+
+  
+  if (payment.bloodRequest.recipientId !== userId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You Are Not Allowed To Upload Receipt For This Payment"
+    );
+  }
+
+  if (payment.status !== PaymentStatus.PAID) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Payment Must Be Completed Before Uploading Receipt"
+    );
+  }
+
+  // 4. Check file
+  if (!file) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Payment Receipt PDF Is Required"
+    );
+  }
+
+
+  if (file.mimetype !== "application/pdf") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Only PDF Files Are Allowed"
+    );
+  }
+
+  
+  const uploadedFile = await uploadToCloudinary(
+    file.buffer,
+    "bloodlink/payment-receipts"
+  );
+
+
+  const updatedPayment = await prisma.payment.update({
+    where: {
+      id: payment.id,
+    },
+    data: {
+      receiptPdfUrl: uploadedFile.secure_url,
+    },
+  });
+
+
+  await createAuditLog({
+    userId,
+    action: AuditAction.PAYMENT,
+    entity: "Payment",
+    entityId: payment.id,
+    details: {
+      paymentId: payment.id,
+      receiptPdfUrl: uploadedFile.secure_url,
+      message: "Payment receipt PDF uploaded successfully",
+    },
+  });
+
+  return updatedPayment;
+};
 
 
 export const PaymentService = {
@@ -976,7 +1131,7 @@ export const PaymentService = {
   initiatePayment,
   executeBkashPayment,
   bkashCallback,
- 
+  uploadPaymentReceipt,
   getMyPayments,
   getAllPayments,
   getSinglePayment,

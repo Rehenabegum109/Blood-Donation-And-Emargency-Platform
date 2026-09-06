@@ -1064,6 +1064,7 @@ export const PaymentScalarFieldEnum = {
   bkashPaymentId: 'bkashPaymentId',
   transactionId: 'transactionId',
   gatewayResponse: 'gatewayResponse',
+  receiptPdfUrl: 'receiptPdfUrl',
   paidAt: 'paidAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
