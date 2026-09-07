@@ -14,7 +14,8 @@ export interface ICreateBloodRequestPayload {
   hospitalName: string;
 
   hospitalAddress?: string | undefined;
-
+  hospitalLatitude: number;
+  hospitalLongitude: number;
   requiredDate: Date;
 
   urgency?:
@@ -48,7 +49,8 @@ export interface IUpdateBloodRequestPayload {
   hospitalName?: string | undefined;
 
   hospitalAddress?: string | undefined;
-
+  hospitalLatitude: number;
+  hospitalLongitude: number;
   requiredDate?: Date | undefined;
 
   urgency?:

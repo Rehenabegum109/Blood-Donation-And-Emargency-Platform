@@ -25,13 +25,22 @@ const createBloodRequest = async (
   const bloodRequest = await prisma.bloodRequest.create({
     data: {
       recipientId,
+
       bloodGroup: payload.bloodGroup,
       units: payload.units ?? 1,
+
       hospitalName: payload.hospitalName,
       hospitalAddress: payload.hospitalAddress ?? null,
+
+    
+      hospitalLatitude: payload.hospitalLatitude,
+      hospitalLongitude: payload.hospitalLongitude,
+
       requiredDate: payload.requiredDate,
       urgency: payload.urgency ?? "NORMAL",
+
       status: BloodRequestStatus.PENDING,
+
       contactNumber: payload.contactNumber ?? null,
       patientName: payload.patientName ?? null,
       notes: payload.notes ?? null,

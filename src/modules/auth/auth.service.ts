@@ -5,7 +5,7 @@ import { Role, AccountStatus, AuditAction } from "../../generated/prisma/enums";
 import jwt from "jsonwebtoken";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
-import { redisClient } from "../../utils/redis";
+import { ensureRedisConnected, redisClient } from "../../utils/redis";
 import { sendEmailVerificationEmail, sendForgotPasswordEmail, sendResetPasswordEmail, sendWelcomeEmail } from "../../utils/email";
 import { IGoogleAuthPayload, IRegisterPayload } from "./auth.interface";
 import { createAuditLog } from "../../utils/auditLog";
@@ -66,7 +66,7 @@ const register = async (payload: IRegisterPayload) => {
     .randomInt(100000, 1000000)
     .toString();
 
-  // Save OTP in Redis for 5 minutes
+  await ensureRedisConnected();
   await redisClient.set(
     `verify-email:${email}`,
     otp,
@@ -101,7 +101,7 @@ const verifyEmail = async (email: string, otp: string) => {
   if (user.emailVerified) {
     throw new Error("Email is already verified");
   }
-
+await ensureRedisConnected();
   const storedOtp = await redisClient.get(
     `verify-email:${normalizedEmail}`
   );
@@ -485,7 +485,7 @@ const forgotPassword = async (email: string) => {
     },
   });
 
-  // Security: email exists কিনা প্রকাশ না করাই ভালো
+  await ensureRedisConnected();
   if (!user) {
     return {
       message: "If this email is registered, a password reset OTP has been sent",
@@ -499,7 +499,7 @@ const forgotPassword = async (email: string) => {
   const otp = crypto
     .randomInt(100000, 1000000)
     .toString();
-
+await ensureRedisConnected();
   await redisClient.set(
     `reset-password:${normalizedEmail}`,
     otp,
@@ -536,7 +536,7 @@ const resetPassword = async (
   if (!user) {
     throw new Error("Invalid email or OTP");
   }
-
+await ensureRedisConnected();
   const storedOtp = await redisClient.get(
     `reset-password:${normalizedEmail}`
   );
@@ -563,7 +563,7 @@ const resetPassword = async (
     },
   });
 
-  // OTP delete
+  await ensureRedisConnected();
   await redisClient.del(
     `reset-password:${normalizedEmail}`
   );

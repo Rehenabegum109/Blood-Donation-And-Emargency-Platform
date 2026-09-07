@@ -93,47 +93,43 @@ const initiatePayment = async (
   recipientId: string,
   payload: IInitiatePaymentPayload
 ) => {
-  // -----------------------------------------------
-  // 1. Validate Blood Request
-  // -----------------------------------------------
+  
 
-  const bloodRequest =
-    await prisma.bloodRequest.findFirst({
-      where: {
-        id: payload.bloodRequestId,
-        recipientId,
-        deletedAt: null,
-      },
-    });
+ const bloodRequest =
+  await prisma.bloodRequest.findFirst({
+    where: {
+      id: payload.bloodRequestId,
+      recipientId,
+      deletedAt: null,
+    },
+  });
 
-  if (!bloodRequest) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      "Blood Request Not Found"
-    );
-  }
+if (!bloodRequest) {
+  throw new AppError(
+    httpStatus.NOT_FOUND,
+    "Blood Request Not Found"
+  );
+}
 
-  // Payment only for verified blood requests
-  if (
-    bloodRequest.verificationStatus !==
-    VerificationStatus.VERIFIED
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Blood Request Must Be Verified Before Payment"
-    );
-  }
+// Payment only for verified blood requests
+if (
+  bloodRequest.verificationStatus !==
+  VerificationStatus.VERIFIED
+) {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    "Blood Request Must Be Verified Before Payment"
+  );
+}
 
-  if (bloodRequest.status !== "PENDING") {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Payment Cannot Be Initiated For This Blood Request"
-    );
-  }
 
-  // -----------------------------------------------
-  // 2. Check Existing Payment
-  // -----------------------------------------------
+if (bloodRequest.status !== "FULFILLED") {
+  throw new AppError(
+    httpStatus.BAD_REQUEST,
+    "Payment Can Only Be Initiated For Fulfilled Blood Requests"
+  );
+}
+  
 
   const existingPayment =
     await prisma.payment.findUnique({
@@ -142,10 +138,7 @@ const initiatePayment = async (
       },
     });
 
-  // If payment already exists:
-  // PENDING / PAID -> cannot create another payment
-  // FAILED / CANCELLED -> retry is allowed
-
+  
   if (
     existingPayment &&
     (
@@ -468,9 +461,7 @@ const executeBkashPayment = async (
         },
       });
 
-    // ------------------------------------------
-    // 2. Generate PDF Receipt
-    // ------------------------------------------
+
 
     const receiptPdf =
       await generatePaymentReceipt({

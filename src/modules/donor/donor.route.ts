@@ -12,7 +12,7 @@ router.get(
   DonorController.getMyDonorProfile
 );
 
-// Match compatible donors
+
 router.get(
   "/match/:bloodRequestId",
   auth(Role.RECIPIENT, Role.ADMIN),

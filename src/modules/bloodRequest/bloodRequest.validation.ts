@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 const CreateBloodRequestZodSchema = z.object({
   bloodGroup: z.enum([
     "A_POSITIVE",
@@ -18,6 +17,10 @@ const CreateBloodRequestZodSchema = z.object({
 
   hospitalAddress: z.string().optional(),
 
+  hospitalLatitude: z.number().min(-90).max(90),
+
+  hospitalLongitude: z.number().min(-180).max(180),
+
   requiredDate: z.coerce.date(),
 
   urgency: z
@@ -30,7 +33,6 @@ const CreateBloodRequestZodSchema = z.object({
 
   notes: z.string().optional(),
 });
-
 const UpdateBloodRequestZodSchema = z.object({
   bloodGroup: z
     .enum([
@@ -51,6 +53,18 @@ const UpdateBloodRequestZodSchema = z.object({
 
   hospitalAddress: z.string().optional(),
 
+  hospitalLatitude: z
+    .number()
+    .min(-90)
+    .max(90)
+    .optional(),
+
+  hospitalLongitude: z
+    .number()
+    .min(-180)
+    .max(180)
+    .optional(),
+
   requiredDate: z.coerce.date().optional(),
 
   urgency: z
@@ -63,7 +77,6 @@ const UpdateBloodRequestZodSchema = z.object({
 
   notes: z.string().optional(),
 });
-
 const RejectBloodRequestZodSchema = z.object({
   rejectionReason: z
     .string()

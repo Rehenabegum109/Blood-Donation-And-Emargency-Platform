@@ -1,42 +1,54 @@
-import { BloodGroup } from "../../generated/prisma/enums";
+import { AccountStatus, BloodGroup, BloodRequestStatus, VerificationStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
-const compatibleBloodGroups: Record<string, string[]> = {
-  O_NEGATIVE: ["O_NEGATIVE"],
-  O_POSITIVE: ["O_NEGATIVE", "O_POSITIVE"],
+const compatibleBloodGroups: Record<BloodGroup, BloodGroup[]> = {
+  [BloodGroup.O_NEGATIVE]: [BloodGroup.O_NEGATIVE],
 
-  A_NEGATIVE: ["O_NEGATIVE", "A_NEGATIVE"],
-  A_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "A_NEGATIVE",
-    "A_POSITIVE",
+  [BloodGroup.O_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
   ],
 
-  B_NEGATIVE: ["O_NEGATIVE", "B_NEGATIVE"],
-  B_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "B_NEGATIVE",
-    "B_POSITIVE",
+  [BloodGroup.A_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.A_NEGATIVE,
   ],
 
-  AB_NEGATIVE: [
-    "O_NEGATIVE",
-    "A_NEGATIVE",
-    "B_NEGATIVE",
-    "AB_NEGATIVE",
+  [BloodGroup.A_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.A_POSITIVE,
   ],
 
-  AB_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "A_NEGATIVE",
-    "A_POSITIVE",
-    "B_NEGATIVE",
-    "B_POSITIVE",
-    "AB_NEGATIVE",
-    "AB_POSITIVE",
+  [BloodGroup.B_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.B_NEGATIVE,
+  ],
+
+  [BloodGroup.B_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.B_POSITIVE,
+  ],
+
+  [BloodGroup.AB_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.AB_NEGATIVE,
+  ],
+
+  [BloodGroup.AB_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.A_POSITIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.B_POSITIVE,
+    BloodGroup.AB_NEGATIVE,
+    BloodGroup.AB_POSITIVE,
   ],
 };
 const getMyDonorProfile = async (userId: string) => {
@@ -78,54 +90,47 @@ const getMyDonorProfile = async (userId: string) => {
 };
 
 const matchDonors = async (bloodRequestId: string) => {
+  const bloodRequest = await prisma.bloodRequest.findFirst({
+    where: {
+      id: bloodRequestId,
+      deletedAt: null,
+    },
 
-  const bloodRequest =
-    await prisma.bloodRequest.findFirst({
-      where: {
-        id: bloodRequestId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        bloodGroup: true,
-        units: true,
-        hospitalName: true,
-        hospitalAddress: true,
-        requiredDate: true,
-        urgency: true,
-        status: true,
-        verificationStatus: true,
-      },
-    });
-
+    select: {
+      id: true,
+      bloodGroup: true,
+      units: true,
+      hospitalName: true,
+      hospitalAddress: true,
+      requiredDate: true,
+      urgency: true,
+      status: true,
+      verificationStatus: true,
+    },
+  });
   if (!bloodRequest) {
     throw new Error("Blood request not found");
   }
-
-  // -----------------------------------------------
-  // 2. Only verified & pending requests
-  // -----------------------------------------------
-
   if (
-    bloodRequest.verificationStatus !== "VERIFIED"
+    bloodRequest.verificationStatus !==
+    VerificationStatus.VERIFIED
   ) {
     throw new Error(
       "Only verified blood requests can be matched with donors"
     );
   }
-
-  if (bloodRequest.status !== "PENDING") {
+  if (
+    bloodRequest.status !==
+    BloodRequestStatus.PENDING
+  ) {
     throw new Error(
       "Donors cannot be matched for this blood request"
     );
   }
 
-  // -----------------------------------------------
-  // 3. Get compatible donor blood groups
-  // -----------------------------------------------
-
   const compatibleGroups =
     compatibleBloodGroups[bloodRequest.bloodGroup];
+
 
   if (!compatibleGroups) {
     throw new Error(
@@ -133,22 +138,23 @@ const matchDonors = async (bloodRequestId: string) => {
     );
   }
 
-  // -----------------------------------------------
-  // 4. Find available donors
-  // -----------------------------------------------
+
 
   const donors = await prisma.donor.findMany({
     where: {
       bloodGroup: {
-        in: compatibleGroups as any,
+        in: compatibleGroups,
       },
+
       isAvailable: true,
+
       user: {
-        status: "ACTIVE",
+        status: AccountStatus.ACTIVE,
         emailVerified: true,
         deletedAt: null,
       },
     },
+
     select: {
       id: true,
       bloodGroup: true,
@@ -158,6 +164,7 @@ const matchDonors = async (bloodRequestId: string) => {
       longitude: true,
       lastDonationDate: true,
       isAvailable: true,
+
       user: {
         select: {
           id: true,
@@ -168,17 +175,24 @@ const matchDonors = async (bloodRequestId: string) => {
         },
       },
     },
+
     orderBy: {
       lastDonationDate: "asc",
     },
   });
 
 
+  // ---------------------------------------------------
+  // 7. Return Result
+  // ---------------------------------------------------
 
   return {
     bloodRequest,
+
     compatibleBloodGroups: compatibleGroups,
+
     totalMatchedDonors: donors.length,
+
     donors,
   };
 };
@@ -208,18 +222,27 @@ const findNearbyDonors = async (
     throw new Error("Blood request not found");
   }
 
-  if (bloodRequest.verificationStatus !== "VERIFIED") {
+  // Only verified request
+  if (
+    bloodRequest.verificationStatus !==
+    VerificationStatus.VERIFIED
+  ) {
     throw new Error(
       "Only verified blood requests can find nearby donors"
     );
   }
 
-  if (bloodRequest.status !== "PENDING") {
+  // Only pending request
+  if (
+    bloodRequest.status !==
+    BloodRequestStatus.PENDING
+  ) {
     throw new Error(
       "Nearby donors cannot be found for this blood request"
     );
   }
 
+  // Hospital coordinates required
   if (
     bloodRequest.hospitalLatitude === null ||
     bloodRequest.hospitalLongitude === null
@@ -232,24 +255,35 @@ const findNearbyDonors = async (
   const compatibleGroups =
     compatibleBloodGroups[bloodRequest.bloodGroup];
 
+  if (!compatibleGroups) {
+    throw new Error(
+      "No compatible blood groups found"
+    );
+  }
+
   const donors = await prisma.donor.findMany({
     where: {
       bloodGroup: {
-        in: compatibleGroups as any,
+        in: compatibleGroups,
       },
+
       isAvailable: true,
+
       latitude: {
         not: null,
       },
+
       longitude: {
         not: null,
       },
+
       user: {
-        status: "ACTIVE",
+        status: AccountStatus.ACTIVE,
         emailVerified: true,
         deletedAt: null,
       },
     },
+
     select: {
       id: true,
       bloodGroup: true,
@@ -258,6 +292,7 @@ const findNearbyDonors = async (
       longitude: true,
       lastDonationDate: true,
       isAvailable: true,
+
       user: {
         select: {
           id: true,
@@ -270,17 +305,21 @@ const findNearbyDonors = async (
     },
   });
 
+  const lat1 = bloodRequest.hospitalLatitude;
+  const lon1 = bloodRequest.hospitalLongitude;
+
+  const R = 6371;
+
   const nearbyDonors = donors
     .map((donor) => {
-      const lat1 = bloodRequest.hospitalLatitude!;
-      const lon1 = bloodRequest.hospitalLongitude!;
       const lat2 = donor.latitude!;
       const lon2 = donor.longitude!;
 
-      const R = 6371;
+      const dLat =
+        ((lat2 - lat1) * Math.PI) / 180;
 
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLon = ((lon2 - lon1) * Math.PI) / 180;
+      const dLon =
+        ((lon2 - lon1) * Math.PI) / 180;
 
       const a =
         Math.sin(dLat / 2) ** 2 +
@@ -289,15 +328,27 @@ const findNearbyDonors = async (
           Math.sin(dLon / 2) ** 2;
 
       const distance =
-        2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        2 *
+        R *
+        Math.atan2(
+          Math.sqrt(a),
+          Math.sqrt(1 - a)
+        );
 
       return {
         ...donor,
-        distanceKm: Number(distance.toFixed(2)),
+        distanceKm: Number(
+          distance.toFixed(2)
+        ),
       };
     })
-    .filter((donor) => donor.distanceKm <= radiusKm)
-    .sort((a, b) => a.distanceKm - b.distanceKm);
+    .filter(
+      (donor) => donor.distanceKm <= radiusKm
+    )
+    .sort(
+      (a, b) =>
+        a.distanceKm - b.distanceKm
+    );
 
   return {
     bloodRequest,

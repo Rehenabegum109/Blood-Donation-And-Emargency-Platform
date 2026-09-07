@@ -91,6 +91,16 @@ var AccountStatus = {
   BLOCKED: "BLOCKED",
   DELETED: "DELETED"
 };
+var BloodGroup = {
+  A_POSITIVE: "A_POSITIVE",
+  A_NEGATIVE: "A_NEGATIVE",
+  B_POSITIVE: "B_POSITIVE",
+  B_NEGATIVE: "B_NEGATIVE",
+  AB_POSITIVE: "AB_POSITIVE",
+  AB_NEGATIVE: "AB_NEGATIVE",
+  O_POSITIVE: "O_POSITIVE",
+  O_NEGATIVE: "O_NEGATIVE"
+};
 var BloodRequestStatus = {
   PENDING: "PENDING",
   FULFILLED: "FULFILLED",
@@ -251,11 +261,40 @@ var redisClient = (0, import_redis.createClient)({
 redisClient.on("error", (error) => {
   console.error("Redis Error:", error);
 });
+var connectPromise = null;
+var ensureRedisConnected = async () => {
+  if (redisClient.isReady) {
+    return;
+  }
+  if (!connectPromise) {
+    connectPromise = redisClient.connect().then(() => void 0).finally(() => {
+      connectPromise = null;
+    });
+  }
+  await connectPromise;
+};
 
 // src/utils/email.ts
 var import_nodemailer = __toESM(require("nodemailer"));
 var import_ejs = __toESM(require("ejs"));
 var import_path = __toESM(require("path"));
+var getTemplatePath = (templateName) => {
+  const isVercel = process.env.VERCEL === "1";
+  if (isVercel) {
+    return import_path.default.join(
+      process.cwd(),
+      "dist",
+      "templates",
+      templateName
+    );
+  }
+  return import_path.default.join(
+    process.cwd(),
+    "src",
+    "templates",
+    templateName
+  );
+};
 var transporter = import_nodemailer.default.createTransport({
   host: config_default.smtp_host,
   port: Number(config_default.smtp_port),
@@ -266,10 +305,7 @@ var transporter = import_nodemailer.default.createTransport({
   }
 });
 var sendEmailVerificationEmail = async (email, name, otp) => {
-  const templatePath = import_path.default.join(
-    process.cwd(),
-    "src",
-    "templates",
+  const templatePath = getTemplatePath(
     "verification_email.ejs"
   );
   const html = await import_ejs.default.renderFile(templatePath, {
@@ -284,10 +320,7 @@ var sendEmailVerificationEmail = async (email, name, otp) => {
   });
 };
 var sendForgotPasswordEmail = async (email, name, otp) => {
-  const templatePath = import_path.default.join(
-    process.cwd(),
-    "src",
-    "templates",
+  const templatePath = getTemplatePath(
     "forgot_password.ejs"
   );
   const html = await import_ejs.default.renderFile(templatePath, {
@@ -302,10 +335,7 @@ var sendForgotPasswordEmail = async (email, name, otp) => {
   });
 };
 var sendResetPasswordEmail = async (email, name) => {
-  const templatePath = import_path.default.join(
-    process.cwd(),
-    "src",
-    "templates",
+  const templatePath = getTemplatePath(
     "reset_password.ejs"
   );
   const html = await import_ejs.default.renderFile(templatePath, {
@@ -319,10 +349,7 @@ var sendResetPasswordEmail = async (email, name) => {
   });
 };
 var sendWelcomeEmail = async (email, name) => {
-  const templatePath = import_path.default.join(
-    process.cwd(),
-    "src",
-    "templates",
+  const templatePath = getTemplatePath(
     "welcome_email.ejs"
   );
   const html = await import_ejs.default.renderFile(templatePath, {
@@ -416,6 +443,7 @@ var register = async (payload) => {
     }
   });
   const otp = import_crypto.default.randomInt(1e5, 1e6).toString();
+  await ensureRedisConnected();
   await redisClient.set(
     `verify-email:${email}`,
     otp,
@@ -443,6 +471,7 @@ var verifyEmail = async (email, otp) => {
   if (user.emailVerified) {
     throw new Error("Email is already verified");
   }
+  await ensureRedisConnected();
   const storedOtp = await redisClient.get(
     `verify-email:${normalizedEmail}`
   );
@@ -715,6 +744,7 @@ var forgotPassword = async (email) => {
       email: normalizedEmail
     }
   });
+  await ensureRedisConnected();
   if (!user) {
     return {
       message: "If this email is registered, a password reset OTP has been sent"
@@ -724,6 +754,7 @@ var forgotPassword = async (email) => {
     throw new Error("Your account is not active");
   }
   const otp = import_crypto.default.randomInt(1e5, 1e6).toString();
+  await ensureRedisConnected();
   await redisClient.set(
     `reset-password:${normalizedEmail}`,
     otp,
@@ -750,6 +781,7 @@ var resetPassword = async (email, otp, newPassword) => {
   if (!user) {
     throw new Error("Invalid email or OTP");
   }
+  await ensureRedisConnected();
   const storedOtp = await redisClient.get(
     `reset-password:${normalizedEmail}`
   );
@@ -771,6 +803,7 @@ var resetPassword = async (email, otp, newPassword) => {
       password: hashedPassword
     }
   });
+  await ensureRedisConnected();
   await redisClient.del(
     `reset-password:${normalizedEmail}`
   );
@@ -1286,6 +1319,8 @@ var CreateBloodRequestZodSchema = import_zod3.z.object({
   units: import_zod3.z.number().int().positive().default(1),
   hospitalName: import_zod3.z.string().min(2),
   hospitalAddress: import_zod3.z.string().optional(),
+  hospitalLatitude: import_zod3.z.number().min(-90).max(90),
+  hospitalLongitude: import_zod3.z.number().min(-180).max(180),
   requiredDate: import_zod3.z.coerce.date(),
   urgency: import_zod3.z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).default("NORMAL"),
   contactNumber: import_zod3.z.string().min(10).max(15).optional(),
@@ -1306,6 +1341,8 @@ var UpdateBloodRequestZodSchema = import_zod3.z.object({
   units: import_zod3.z.number().int().positive().optional(),
   hospitalName: import_zod3.z.string().min(2).optional(),
   hospitalAddress: import_zod3.z.string().optional(),
+  hospitalLatitude: import_zod3.z.number().min(-90).max(90).optional(),
+  hospitalLongitude: import_zod3.z.number().min(-180).max(180).optional(),
   requiredDate: import_zod3.z.coerce.date().optional(),
   urgency: import_zod3.z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]).optional(),
   contactNumber: import_zod3.z.string().min(10).max(15).optional(),
@@ -1341,6 +1378,8 @@ var createBloodRequest = async (recipientId, payload) => {
       units: payload.units ?? 1,
       hospitalName: payload.hospitalName,
       hospitalAddress: payload.hospitalAddress ?? null,
+      hospitalLatitude: payload.hospitalLatitude,
+      hospitalLongitude: payload.hospitalLongitude,
       requiredDate: payload.requiredDate,
       urgency: payload.urgency ?? "NORMAL",
       status: BloodRequestStatus.PENDING,
@@ -1787,7 +1826,7 @@ var deleteBloodRequest2 = catchAsync(
 );
 var searchBloodRequests2 = catchAsync(
   async (req, res) => {
-    const searchTerm = typeof req.query.q === "string" ? req.query.q : "";
+    const searchTerm = typeof req.query.searchTerm === "string" ? req.query.searchTerm : "";
     if (!searchTerm) {
       throw new Error("Search keyword is required");
     }
@@ -2603,10 +2642,10 @@ var initiatePayment = async (recipientId, payload) => {
       "Blood Request Must Be Verified Before Payment"
     );
   }
-  if (bloodRequest.status !== "PENDING") {
+  if (bloodRequest.status !== "FULFILLED") {
     throw new AppError(
       import_http_status8.default.BAD_REQUEST,
-      "Payment Cannot Be Initiated For This Blood Request"
+      "Payment Can Only Be Initiated For Fulfilled Blood Requests"
     );
   }
   const existingPayment = await prisma.payment.findUnique({
@@ -3398,37 +3437,46 @@ var import_http_status10 = __toESM(require("http-status"));
 
 // src/modules/donor/donor.service.ts
 var compatibleBloodGroups = {
-  O_NEGATIVE: ["O_NEGATIVE"],
-  O_POSITIVE: ["O_NEGATIVE", "O_POSITIVE"],
-  A_NEGATIVE: ["O_NEGATIVE", "A_NEGATIVE"],
-  A_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "A_NEGATIVE",
-    "A_POSITIVE"
+  [BloodGroup.O_NEGATIVE]: [BloodGroup.O_NEGATIVE],
+  [BloodGroup.O_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE
   ],
-  B_NEGATIVE: ["O_NEGATIVE", "B_NEGATIVE"],
-  B_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "B_NEGATIVE",
-    "B_POSITIVE"
+  [BloodGroup.A_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.A_NEGATIVE
   ],
-  AB_NEGATIVE: [
-    "O_NEGATIVE",
-    "A_NEGATIVE",
-    "B_NEGATIVE",
-    "AB_NEGATIVE"
+  [BloodGroup.A_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.A_POSITIVE
   ],
-  AB_POSITIVE: [
-    "O_NEGATIVE",
-    "O_POSITIVE",
-    "A_NEGATIVE",
-    "A_POSITIVE",
-    "B_NEGATIVE",
-    "B_POSITIVE",
-    "AB_NEGATIVE",
-    "AB_POSITIVE"
+  [BloodGroup.B_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.B_NEGATIVE
+  ],
+  [BloodGroup.B_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.B_POSITIVE
+  ],
+  [BloodGroup.AB_NEGATIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.AB_NEGATIVE
+  ],
+  [BloodGroup.AB_POSITIVE]: [
+    BloodGroup.O_NEGATIVE,
+    BloodGroup.O_POSITIVE,
+    BloodGroup.A_NEGATIVE,
+    BloodGroup.A_POSITIVE,
+    BloodGroup.B_NEGATIVE,
+    BloodGroup.B_POSITIVE,
+    BloodGroup.AB_NEGATIVE,
+    BloodGroup.AB_POSITIVE
   ]
 };
 var getMyDonorProfile = async (userId) => {
@@ -3487,12 +3535,12 @@ var matchDonors = async (bloodRequestId) => {
   if (!bloodRequest) {
     throw new Error("Blood request not found");
   }
-  if (bloodRequest.verificationStatus !== "VERIFIED") {
+  if (bloodRequest.verificationStatus !== VerificationStatus.VERIFIED) {
     throw new Error(
       "Only verified blood requests can be matched with donors"
     );
   }
-  if (bloodRequest.status !== "PENDING") {
+  if (bloodRequest.status !== BloodRequestStatus.PENDING) {
     throw new Error(
       "Donors cannot be matched for this blood request"
     );
@@ -3510,7 +3558,7 @@ var matchDonors = async (bloodRequestId) => {
       },
       isAvailable: true,
       user: {
-        status: "ACTIVE",
+        status: AccountStatus.ACTIVE,
         emailVerified: true,
         deletedAt: null
       }
@@ -3566,12 +3614,12 @@ var findNearbyDonors = async (bloodRequestId, radiusKm = 20) => {
   if (!bloodRequest) {
     throw new Error("Blood request not found");
   }
-  if (bloodRequest.verificationStatus !== "VERIFIED") {
+  if (bloodRequest.verificationStatus !== VerificationStatus.VERIFIED) {
     throw new Error(
       "Only verified blood requests can find nearby donors"
     );
   }
-  if (bloodRequest.status !== "PENDING") {
+  if (bloodRequest.status !== BloodRequestStatus.PENDING) {
     throw new Error(
       "Nearby donors cannot be found for this blood request"
     );
@@ -3582,6 +3630,11 @@ var findNearbyDonors = async (bloodRequestId, radiusKm = 20) => {
     );
   }
   const compatibleGroups = compatibleBloodGroups[bloodRequest.bloodGroup];
+  if (!compatibleGroups) {
+    throw new Error(
+      "No compatible blood groups found"
+    );
+  }
   const donors = await prisma.donor.findMany({
     where: {
       bloodGroup: {
@@ -3595,7 +3648,7 @@ var findNearbyDonors = async (bloodRequestId, radiusKm = 20) => {
         not: null
       },
       user: {
-        status: "ACTIVE",
+        status: AccountStatus.ACTIVE,
         emailVerified: true,
         deletedAt: null
       }
@@ -3619,21 +3672,30 @@ var findNearbyDonors = async (bloodRequestId, radiusKm = 20) => {
       }
     }
   });
+  const lat1 = bloodRequest.hospitalLatitude;
+  const lon1 = bloodRequest.hospitalLongitude;
+  const R = 6371;
   const nearbyDonors = donors.map((donor) => {
-    const lat1 = bloodRequest.hospitalLatitude;
-    const lon1 = bloodRequest.hospitalLongitude;
     const lat2 = donor.latitude;
     const lon2 = donor.longitude;
-    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    const distance = 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = 2 * R * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
     return {
       ...donor,
-      distanceKm: Number(distance.toFixed(2))
+      distanceKm: Number(
+        distance.toFixed(2)
+      )
     };
-  }).filter((donor) => donor.distanceKm <= radiusKm).sort((a, b) => a.distanceKm - b.distanceKm);
+  }).filter(
+    (donor) => donor.distanceKm <= radiusKm
+  ).sort(
+    (a, b) => a.distanceKm - b.distanceKm
+  );
   return {
     bloodRequest,
     radiusKm,
@@ -5961,6 +6023,9 @@ var limiter = (0, import_express_rate_limit.default)({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || "unknown";
+  },
   message: {
     success: false,
     message: "Too many requests. Please try again later.",
@@ -5983,6 +6048,77 @@ app.use(notFound);
 app.use(globalErrorHandler);
 var app_default = app;
 
+// src/utils/seed.ts
+var import_bcrypt2 = __toESM(require("bcrypt"));
+var seedAdmin = async () => {
+  const email = "admin@bloodlink.com";
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email }
+  });
+  if (existingAdmin) {
+    console.log("Admin already exists");
+    return;
+  }
+  const hashedPassword = await import_bcrypt2.default.hash("Admin@123", 10);
+  await prisma.user.create({
+    data: {
+      name: "BloodLink Admin",
+      email,
+      password: hashedPassword,
+      role: Role.ADMIN,
+      status: AccountStatus.ACTIVE,
+      emailVerified: true
+    }
+  });
+  console.log("Admin created successfully");
+};
+var seedDonor = async () => {
+  const email = "donor@bloodlink.com";
+  const existingDonor = await prisma.user.findUnique({
+    where: { email }
+  });
+  if (existingDonor) {
+    console.log("Donor already exists");
+    return;
+  }
+  const hashedPassword = await import_bcrypt2.default.hash("Donor@123", 10);
+  await prisma.user.create({
+    data: {
+      name: "Test Donor",
+      email,
+      password: hashedPassword,
+      role: Role.DONOR,
+      status: AccountStatus.ACTIVE,
+      emailVerified: true,
+      phone: "01700000000",
+      location: "Sylhet",
+      donor: {
+        create: {
+          bloodGroup: BloodGroup.O_POSITIVE,
+          address: "Sylhet, Bangladesh",
+          isAvailable: true
+        }
+      }
+    }
+  });
+  console.log("Donor created successfully");
+};
+
 // src/vercel.ts
+if (!redisClient.isOpen) {
+  redisClient.connect().catch((error) => {
+    console.error("Redis connection error:", error);
+  });
+}
+var seedPromise = null;
+var runSeed = async () => {
+  await seedAdmin();
+  await seedDonor();
+};
+if (!seedPromise) {
+  seedPromise = runSeed().catch((error) => {
+    console.error("Seed error:", error);
+  });
+}
 var vercel_default = app_default;
 //# sourceMappingURL=vercel.js.map

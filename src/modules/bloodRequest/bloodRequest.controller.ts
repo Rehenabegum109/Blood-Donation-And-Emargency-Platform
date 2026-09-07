@@ -169,10 +169,10 @@ const deleteBloodRequest = catchAsync(
 );
 const searchBloodRequests = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const searchTerm =
-      typeof req.query.q === "string"
-        ? req.query.q
-        : "";
+  const searchTerm =
+  typeof req.query.searchTerm === "string"
+    ? req.query.searchTerm
+    : "";
 
     if (!searchTerm) {
       throw new Error("Search keyword is required");
