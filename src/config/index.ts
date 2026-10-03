@@ -7,7 +7,7 @@ const config = {
 node_env: process.env.NODE_ENV,
   database_url: process.env.DATABASE_URL,
 
-
+frontend_url:process.env.FRONTEND_URL,
 redis_user:process.env.REDIS_USER!,
 redis_password:process.env.REDIS_PASSWORD!,
 redis_host:process.env.REDIS_HOST!,

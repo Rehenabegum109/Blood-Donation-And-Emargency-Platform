@@ -24,7 +24,11 @@ router.get(
   auth(Role.DONOR),
   DonationController.getMyDonations
 );
-
+router.get(
+  "/received",
+  auth(Role.RECIPIENT),
+  DonationController.getReceivedDonations
+);
 router.patch(
   "/:id/approve",
   auth(Role.RECIPIENT),
@@ -34,5 +38,11 @@ router.patch(
   "/:id/reject",
   auth(Role.RECIPIENT),
   DonationController.rejectDonation
+);
+
+router.patch(
+  "/:id/cancel",
+  auth(Role.DONOR),
+  DonationController.cancelDonation
 );
 export const DonationRoutes = router;

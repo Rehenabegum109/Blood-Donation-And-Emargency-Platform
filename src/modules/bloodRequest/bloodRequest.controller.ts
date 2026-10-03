@@ -46,13 +46,17 @@ const getAllBloodRequests = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const query = req.query;
 
-    const limit = query.limit ? Number(query.limit) : 10;
+    const limit = query.limit
+      ? Number(query.limit)
+      : 10;
 
-    const page = query.page ? Number(query.page) : 1;
+    const page = query.page
+      ? Number(query.page)
+      : 1;
 
-    const skip = (page - 1) * limit;
-
-    const sortBy = query.sortBy ? String(query.sortBy) : "createdAt";
+    const sortBy = query.sortBy
+      ? String(query.sortBy)
+      : "createdAt";
 
     const sortOrder = query.sortOrder
       ? String(query.sortOrder)
@@ -68,14 +72,21 @@ const getAllBloodRequests = catchAsync(
         ? query.bloodGroup
         : undefined;
 
-    const result = await BloodRequestService.getAllBloodRequests(
-      page,
-      limit,
-      status,
-      bloodGroup,
-      sortBy,
-      sortOrder
-    );
+    const verificationStatus =
+      typeof query.verificationStatus === "string"
+        ? query.verificationStatus
+        : undefined;
+
+    const result =
+      await BloodRequestService.getAllBloodRequests(
+        page,
+        limit,
+        status,
+        bloodGroup,
+        sortBy,
+        sortOrder,
+        verificationStatus
+      );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

@@ -1,33 +1,58 @@
 import { z } from "zod";
 
-const RegisterZodSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be at most 100 characters"),
+const RegisterZodSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Name must be at least 2 characters")
+      .max(100, "Name must be at most 100 characters"),
 
-  email: z
-    .string()
-    .email("Invalid email address"),
+    email: z
+      .string()
+      .email("Invalid email address"),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
-      "Password must contain uppercase, lowercase, number and special character"
-    ),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+        "Password must contain uppercase, lowercase, number and special character"
+      ),
 
-  phone: z
-    .string()
-    .min(10, "Phone number must be at least 10 characters")
-    .max(15, "Phone number must be at most 15 characters")
-    .optional(),
+    role: z.enum(["DONOR", "RECIPIENT"]),
 
-  location: z
-    .string()
-    .optional(),
-});
+    phone: z
+      .string()
+      .min(10, "Phone number must be at least 10 characters")
+      .max(15, "Phone number must be at most 15 characters")
+      .optional(),
+
+    location: z
+      .string()
+      .optional(),
+
+    bloodGroup: z
+      .enum([
+        "A_POSITIVE",
+        "A_NEGATIVE",
+        "B_POSITIVE",
+        "B_NEGATIVE",
+        "AB_POSITIVE",
+        "AB_NEGATIVE",
+        "O_POSITIVE",
+        "O_NEGATIVE",
+      ])
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role === "DONOR" && !data.bloodGroup) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bloodGroup"],
+        message: "Blood group is required for donors",
+      });
+    }
+  });
 
 const LoginZodSchema = z.object({
   email: z.string().email("Invalid email address"),

@@ -269,6 +269,110 @@ const getDashboardStats = async () => {
     },
   };
 };
+
+const getAllDonations = async (
+  page = 1,
+  limit = 10,
+  status?: string,
+  bloodGroup?: string
+) => {
+  const skip = (page - 1) * limit;
+
+  const where: any = {
+    ...(status && {
+      status,
+    }),
+
+    ...(bloodGroup && {
+      bloodRequest: {
+        bloodGroup,
+      },
+    }),
+  };
+
+  const [donations, total] = await prisma.$transaction([
+    prisma.donation.findMany({
+      where,
+      skip,
+      take: limit,
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      select: {
+        id: true,
+        donorId: true,
+        bloodRequestId: true,
+        status: true,
+        donationDate: true,
+        units: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+
+        donor: {
+          select: {
+            id: true,
+            bloodGroup: true,
+            lastDonationDate: true,
+            isAvailable: true,
+
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+
+        bloodRequest: {
+          select: {
+            id: true,
+            bloodGroup: true,
+            units: true,
+            hospitalName: true,
+            hospitalAddress: true,
+            patientName: true,
+            contactNumber: true,
+            requiredDate: true,
+            urgency: true,
+            status: true,
+            verificationStatus: true,
+
+            recipient: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+
+    prisma.donation.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data: donations,
+
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+  };
+};
+
 const getAuditLogs = async (
   page = 1,
   limit = 10,
@@ -322,6 +426,8 @@ export const AdminService = {
   getAllUsers,
   blockUser,
   unblockUser,
+  
   getDashboardStats,
+  getAllDonations,
   getAuditLogs,
 };

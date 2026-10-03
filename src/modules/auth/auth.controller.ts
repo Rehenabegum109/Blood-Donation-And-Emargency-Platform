@@ -9,9 +9,37 @@ import { catchAsync } from "../../utils/catchAsync";
 import { IGoogleAuthPayload } from "./auth.interface";
 import config from "../../config";
 
+
+// const register = catchAsync(
+
+//   async (req: Request, res: Response) => {
+//         console.log("REQ BODY:", req.body);
+//     const payload =
+//       authValidation.RegisterZodSchema.safeParse(req.body);
+
+//     if (!payload.success) {
+//       const errorMessage = payload.error.issues
+//         .map((issue) => issue.message)
+//         .join(" ");
+
+//       throw new Error(errorMessage);
+//     }
+
+//     const result = await AuthService.register(payload.data);
+
+//     sendResponse(res, {
+//       success: true,
+//       statusCode: httpStatus.CREATED,
+//       message:
+//         "Registration successful. Please check your email to verify your account.",
+//       data: result,
+//     });
+//   }
+// );
+
+
 const register = catchAsync(
   async (req: Request, res: Response) => {
-        console.log("REQ BODY:", req.body);
     const payload =
       authValidation.RegisterZodSchema.safeParse(req.body);
 
@@ -232,6 +260,18 @@ const resetPassword = catchAsync(
     });
   }
 );
+const logout = catchAsync( async (req: Request, res: Response) => {
+   res.clearCookie("accessToken",
+     { httpOnly: true, secure: false,
+       sameSite: "lax", });
+        res.clearCookie("refreshToken", 
+          { httpOnly: true,
+             secure: false,
+              sameSite: "lax", }); 
+              sendResponse(res, { statusCode: httpStatus.OK,
+                 success: true, message: "User logged out successfully",
+                  data: null, }); }
+ );
 export const AuthController = {
   register,
   verifyEmail,
@@ -240,4 +280,5 @@ export const AuthController = {
   refreshAccessToken,
   forgotPassword,
   resetPassword,
+  logout
 };

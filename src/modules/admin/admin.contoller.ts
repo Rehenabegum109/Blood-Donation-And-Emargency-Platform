@@ -169,11 +169,62 @@ const getAuditLogs = catchAsync(
     });
   }
 );
+const getAllDonations = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const page = req.query.page
+      ? Number(req.query.page)
+      : 1;
+
+    const limit = req.query.limit
+      ? Number(req.query.limit)
+      : 10;
+
+    const status =
+      typeof req.query.status === "string"
+        ? req.query.status
+        : undefined;
+
+    const bloodGroup =
+      typeof req.query.bloodGroup === "string"
+        ? req.query.bloodGroup
+        : undefined;
+
+    if (Number.isNaN(page) || page < 1) {
+      throw new Error("Page must be a positive number");
+    }
+
+    if (
+      Number.isNaN(limit) ||
+      limit < 1 ||
+      limit > 100
+    ) {
+      throw new Error(
+        "Limit must be between 1 and 100"
+      );
+    }
+
+    const result =
+      await AdminService.getAllDonations(
+        page,
+        limit,
+        status,
+        bloodGroup
+      );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Donations retrieved successfully",
+      data: result,
+    });
+  }
+);
 
 export const AdminController = {
   getAllUsers,
   blockUser,
   unblockUser,
+  getAllDonations,
   getDashboardStats,
   getAuditLogs,
 };

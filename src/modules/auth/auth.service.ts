@@ -16,9 +16,77 @@ const googleClient = new OAuth2Client(
   config.google_client_secret,
   config.google_callback_url
 );
+// const register = async (payload: IRegisterPayload) => {
+//   const email = payload.email.trim().toLowerCase();
+
+
+//   const existingUser = await prisma.user.findUnique({
+//     where: { email },
+//   });
+
+//   if (existingUser) {
+//     throw new Error("User already exists with this email");
+//   }
+
+//   // Hash password
+//   const hashedPassword = await bcrypt.hash(
+//     payload.password,
+//     10
+//   );
+
+//   // Create user
+//   const user = await prisma.user.create({
+//   data: {
+//     name: payload.name,
+//     email,
+//     password: hashedPassword,
+//     phone: payload.phone ?? null,
+//     location: payload.location ?? null,
+//     role: payload.role ?? Role.RECIPIENT,
+//     status: AccountStatus.ACTIVE,
+//     emailVerified: false,
+//   },
+
+//   select: {
+//     id: true,
+//     name: true,
+//     email: true,
+//     role: true,
+//     status: true,
+//     phone: true,
+//     location: true,
+//     emailVerified: true,
+//     createdAt: true,
+//     updatedAt: true,
+//   },
+// });
+
+//   // Generate OTP
+//   const otp = crypto
+//     .randomInt(100000, 1000000)
+//     .toString();
+
+//   await ensureRedisConnected();
+//   await redisClient.set(
+//     `verify-email:${email}`,
+//     otp,
+//     {
+//       EX: 300,
+//     }
+//   );
+
+//   // Send verification email
+//   await sendEmailVerificationEmail(
+//     email,
+//     user.name,
+//     otp
+//   );
+
+//   return user;
+// };
+
 const register = async (payload: IRegisterPayload) => {
   const email = payload.email.trim().toLowerCase();
-
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -28,38 +96,57 @@ const register = async (payload: IRegisterPayload) => {
     throw new Error("User already exists with this email");
   }
 
+  // Donor must provide blood group
+  if (payload.role === Role.DONOR && !payload.bloodGroup) {
+    throw new Error("Blood group is required for donors");
+  }
+
   // Hash password
   const hashedPassword = await bcrypt.hash(
     payload.password,
     10
   );
 
-  // Create user
-  const user = await prisma.user.create({
-  data: {
-    name: payload.name,
-    email,
-    password: hashedPassword,
-    phone: payload.phone ?? null,
-    location: payload.location ?? null,
-    role: Role.RECIPIENT,
-    status: AccountStatus.ACTIVE,
-    emailVerified: false,
-  },
+  // Create User + Donor profile together
+  const user = await prisma.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        name: payload.name,
+        email,
+        password: hashedPassword,
+        phone: payload.phone ?? null,
+        location: payload.location ?? null,
+        role: payload.role,
+        status: AccountStatus.ACTIVE,
+        emailVerified: false,
+      },
 
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    role: true,
-    status: true,
-    phone: true,
-    location: true,
-    emailVerified: true,
-    createdAt: true,
-    updatedAt: true,
-  },
-});
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        phone: true,
+        location: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+
+    if (createdUser.role === Role.DONOR) {
+      await tx.donor.create({
+        data: {
+          userId: createdUser.id,
+          bloodGroup: payload.bloodGroup!,
+        },
+      });
+    }
+
+    return createdUser;
+  });
 
   // Generate OTP
   const otp = crypto
@@ -67,6 +154,7 @@ const register = async (payload: IRegisterPayload) => {
     .toString();
 
   await ensureRedisConnected();
+
   await redisClient.set(
     `verify-email:${email}`,
     otp,
@@ -75,7 +163,7 @@ const register = async (payload: IRegisterPayload) => {
     }
   );
 
-  // Send verification email
+
   await sendEmailVerificationEmail(
     email,
     user.name,
@@ -84,7 +172,6 @@ const register = async (payload: IRegisterPayload) => {
 
   return user;
 };
-
 const verifyEmail = async (email: string, otp: string) => {
   const normalizedEmail = email.trim().toLowerCase();
 

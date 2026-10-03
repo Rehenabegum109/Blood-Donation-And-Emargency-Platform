@@ -15,6 +15,7 @@ setupSwagger(app);
 app.use(helmet());
 app.use(
 	cors({
+    origin: "http://localhost:3000",
 credentials: true,
 	}),
 );

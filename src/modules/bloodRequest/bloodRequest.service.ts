@@ -69,7 +69,8 @@ const getAllBloodRequests = async (
   status?: string,
   bloodGroup?: string,
   sortBy: string = "createdAt",
-  sortOrder: string = "desc"
+  sortOrder: string = "desc",
+   verificationStatus?: string
 ) => {
   const skip = (page - 1) * limit;
 
@@ -77,6 +78,7 @@ const getAllBloodRequests = async (
   deletedAt: null,
   ...(status ? { status: status as any } : {}),
   ...(bloodGroup ? { bloodGroup: bloodGroup as any } : {}),
+  ...(verificationStatus ? { verificationStatus: verificationStatus as any } : {}),
 };
 
   const [requests, total] = await Promise.all([

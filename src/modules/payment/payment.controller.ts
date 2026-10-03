@@ -6,6 +6,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
 import { PaymentService } from "./payment.service";
+import config from "../../config";
 
 
 
@@ -65,46 +66,75 @@ const executeBkashPayment = catchAsync(
   }
 );
 
+// const bkashCallback = catchAsync(
+//   async (
+//     req: Request,
+//     res: Response
+//   ) => {
+//     const paymentID =
+//       typeof req.query.paymentID === "string"
+//         ? req.query.paymentID
+//         : undefined;
+
+//     const status =
+//       typeof req.query.status === "string"
+//         ? req.query.status
+//         : undefined;
+
+//     if (!paymentID) {
+//       throw new Error("Payment ID missing");
+//     }
+
+//     if (!status) {
+//       throw new Error("Payment status missing");
+//     }
+
+//     const result =
+//       await PaymentService.bkashCallback({
+//         paymentID,
+//         status,
+//       });
+
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: result.status === "success",
+//       message: result.message,
+//       data: result.payment,
+//     });
+//   }
+// );
+
 const bkashCallback = catchAsync(
-  async (
-    req: Request,
-    res: Response
-  ) => {
-    const paymentID =
-      typeof req.query.paymentID === "string"
-        ? req.query.paymentID
-        : undefined;
+  async (req: Request, res: Response) => {
+    const result = await PaymentService.bkashCallback(
+      req.query as Record<string, string | undefined>
+    );
 
-    const status =
-      typeof req.query.status === "string"
-        ? req.query.status
-        : undefined;
+    const paymentStatus = result.status;
 
-    if (!paymentID) {
-      throw new Error("Payment ID missing");
+    if (paymentStatus === "success") {
+      return res.redirect(
+        `${config.frontend_url}/dashboard/recipient/payments/success?paymentID=${req.query.paymentID}`
+      );
     }
 
-    if (!status) {
-      throw new Error("Payment status missing");
+    if (paymentStatus === "failure") {
+      return res.redirect(
+        `${config.frontend_url}/dashboard/recipient/payments?payment=failed`
+      );
     }
 
-    const result =
-      await PaymentService.bkashCallback({
-        paymentID,
-        status,
-      });
+    if (paymentStatus === "cancel") {
+      return res.redirect(
+        `${config.frontend_url}/dashboard/recipient/payments?payment=cancelled`
+      );
+    }
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: result.status === "success",
-      message: result.message,
-      data: result.payment,
-    });
+    return res.redirect(
+      `${config.frontend_url}/dashboard/recipient/payments?payment=failed`
+    );
   }
 );
-
-
-
 
 
 const getMyPayments = catchAsync(
@@ -199,4 +229,4 @@ export const PaymentController = {
   getMyPayments,
   getAllPayments,
   getSinglePayment,
-};
+}; 

@@ -38,5 +38,10 @@ router.get(
   auth(Role.ADMIN),
   AdminController.getAuditLogs
 );
+router.get(
+  "/donations",
+  auth(Role.ADMIN),
+  AdminController.getAllDonations
+);
 
 export const AdminRoutes = router;

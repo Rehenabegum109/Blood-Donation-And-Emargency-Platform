@@ -56,6 +56,25 @@ const getMyDonations = catchAsync(
     });
   }
 );
+const getReceivedDonations = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const result = await DonationService.getReceivedDonations(
+      req.user!.id,
+      page,
+      limit
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Received donations retrieved successfully",
+      data: result,
+    });
+  }
+);
 const approveDonation = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const recipientId = req.user?.id;
@@ -116,11 +135,34 @@ const rejectDonation = catchAsync(
     });
   }
 );
+const cancelDonation = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const donationId = req.params.id;
+
+    if (!donationId || Array.isArray(donationId)) {
+      throw new Error("Invalid donation ID");
+    }
+
+    const result = await DonationService.cancelDonation(
+      donationId,
+      req.user!.id
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Donation cancelled successfully",
+      data: result,
+    });
+  }
+);
 
 export const DonationController = {
   createDonation,
   getMyDonations,
+  getReceivedDonations,
   approveDonation,
+  cancelDonation,
 
   rejectDonation,
 };

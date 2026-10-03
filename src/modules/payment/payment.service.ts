@@ -152,20 +152,10 @@ if (bloodRequest.status !== "FULFILLED") {
     );
   }
 
-  // -----------------------------------------------
-  // 3. Calculate Amount
-  // -----------------------------------------------
-
-  // Business rule:
-  // 1 unit = 100 BDT
 
   const amount = bloodRequest.units * 100;
 
-  // -----------------------------------------------
-  // 4. Create New bKash Payment
-  // IMPORTANT:
-  // bKash API call is OUTSIDE Prisma transaction
-  // -----------------------------------------------
+
 
   const bkashPayload: IBkashCreatePaymentPayload = {
     mode: "0011",
@@ -291,9 +281,7 @@ if (bloodRequest.status !== "FULFILLED") {
       }
     );
 
-  // -----------------------------------------------
-  // 6. Audit Log
-  // -----------------------------------------------
+
 
   await createAuditLog({
     userId: recipientId,
@@ -323,10 +311,6 @@ if (bloodRequest.status !== "FULFILLED") {
         "bKash payment initiated/retried by recipient",
     },
   });
-
-  // -----------------------------------------------
-  // 7. Return Payment Information
-  // -----------------------------------------------
 
   return {
     payment,
@@ -487,9 +471,7 @@ const executeBkashPayment = async (
           updatedPayment.bloodRequestId,
       });
 
-    // ------------------------------------------
-    // 3. Upload PDF to Cloudinary
-    // ------------------------------------------
+    
 
     const uploadedReceipt =
       await uploadToCloudinary(
@@ -607,9 +589,7 @@ const bkashCallback = async (
     );
   }
 
-  // ----------------------------------------------
-  // CANCEL
-  // ----------------------------------------------
+
 
   if (status === "cancel") {
     const updatedPayment =
@@ -670,9 +650,7 @@ const bkashCallback = async (
     };
   }
 
-  // ----------------------------------------------
-  // FAILURE
-  // ----------------------------------------------
+
 
   if (status === "failure") {
     const updatedPayment =
