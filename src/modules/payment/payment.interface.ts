@@ -1,11 +1,21 @@
 export interface IQuery {
+  // Pagination
   page?: string;
   limit?: string;
+
+  // Sorting
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+
+  // Filters
   recipientEmail?: string;
   status?: string;
   method?: string;
+
+  // bKash Callback
+  paymentID?: string;
+  signature?: string;
+  apiVersion?: string;
 }
 
 export interface IInitiatePaymentPayload {

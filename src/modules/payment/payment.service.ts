@@ -319,6 +319,422 @@ if (bloodRequest.status !== "FULFILLED") {
   };
 };
 
+// const executeBkashPayment = async (
+//   paymentID: string
+// ) => {
+//   const bkashIdToken = await getBkashIdToken();
+
+//   if (!bkashIdToken) {
+//     throw new AppError(
+//       httpStatus.BAD_GATEWAY,
+//       "No bKash Access Token Found"
+//     );
+//   }
+
+//   const executeUrl =
+//     `${config.bkash_base_url}/tokenized/checkout/execute`;
+
+//   console.log(
+//     "bKash Execute URL:",
+//     executeUrl
+//   );
+
+//   console.log(
+//     "bKash Payment ID:",
+//     paymentID
+//   );
+
+//   const response = await fetch(
+//     executeUrl,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Accept: "application/json",
+//         Authorization: bkashIdToken,
+//         "X-App-Key":
+//           config.bkash_app_key,
+//       },
+//       body: JSON.stringify({
+//         paymentID,
+//       }),
+//     }
+//   );
+
+//   const result =
+//     (await response.json()) as IBkashExecutePaymentResponse;
+
+//   console.log(
+//     "bKash Execute Status:",
+//     response.status
+//   );
+
+//   console.log(
+//     "bKash Execute Response:",
+//     result
+//   );
+
+//   if (!response.ok) {
+//     throw new AppError(
+//       httpStatus.BAD_GATEWAY,
+//       result.statusMessage ||
+//         "bKash Payment Execution Failed"
+//     );
+//   }
+
+//   const payment =
+//     await prisma.payment.findUnique({
+//       where: {
+//         bkashPaymentId: paymentID,
+//       },
+
+//       include: {
+//         bloodRequest: {
+//           select: {
+//             id: true,
+//             recipientId: true,
+//           },
+//         },
+//       },
+//     });
+
+//   if (!payment) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       "Payment Record Not Found"
+//     );
+//   }
+
+//   // Already paid
+//   if (
+//     payment.status ===
+//     PaymentStatus.PAID
+//   ) {
+//     return payment;
+//   }
+
+//   // Successful payment
+//   if (
+//     result.transactionStatus ===
+//       "Completed" &&
+//     result.trxID
+//   ) {
+//     // ------------------------------------------
+//     // 1. Update payment as PAID
+//     // ------------------------------------------
+
+//     const updatedPayment =
+//       await prisma.payment.update({
+//         where: {
+//           id: payment.id,
+//         },
+
+//         data: {
+//           status:
+//             PaymentStatus.PAID,
+
+//           transactionId:
+//             result.trxID,
+
+//           paidAt: new Date(),
+
+//           gatewayResponse:
+//             JSON.parse(
+//               JSON.stringify(result)
+//             ),
+//         },
+//       });
+
+
+
+//     const receiptPdf =
+//       await generatePaymentReceipt({
+//         paymentId:
+//           updatedPayment.id,
+
+//         transactionId:
+//           result.trxID,
+
+//         amount:
+//           updatedPayment.amount.toString(),
+
+//         currency:
+//           updatedPayment.currency,
+
+//         method:
+//           updatedPayment.method,
+
+//         paidAt:
+//           updatedPayment.paidAt!,
+
+//         bloodRequestId:
+//           updatedPayment.bloodRequestId,
+//       });
+
+    
+
+//     const uploadedReceipt =
+//       await uploadToCloudinary(
+//         receiptPdf,
+//         "bloodlink/payment-receipts"
+//       );
+
+//     // ------------------------------------------
+//     // 4. Save PDF URL
+//     // ------------------------------------------
+
+//     const paymentWithReceipt =
+//       await prisma.payment.update({
+//         where: {
+//           id: updatedPayment.id,
+//         },
+
+//         data: {
+//           receiptPdfUrl:
+//             uploadedReceipt.secure_url,
+//         },
+//       });
+
+//     // ------------------------------------------
+//     // 5. Audit log
+//     // ------------------------------------------
+
+//     await createAuditLog({
+//       userId:
+//         payment.bloodRequest.recipientId,
+
+//       action:
+//         AuditAction.PAYMENT,
+
+//       entity: "Payment",
+
+//       entityId:
+//         paymentWithReceipt.id,
+
+//       details: {
+//         bloodRequestId:
+//           paymentWithReceipt.bloodRequestId,
+
+//         amount:
+//           paymentWithReceipt.amount.toString(),
+
+//         currency:
+//           paymentWithReceipt.currency,
+
+//         method:
+//           paymentWithReceipt.method,
+
+//         status:
+//           paymentWithReceipt.status,
+
+//         transactionId:
+//           paymentWithReceipt.transactionId,
+
+//         receiptPdfUrl:
+//           paymentWithReceipt.receiptPdfUrl,
+
+//         message:
+//           "Payment completed and receipt PDF uploaded successfully",
+//       },
+//     });
+
+//     return paymentWithReceipt;
+//   }
+
+//   return result;
+// };
+
+
+// const bkashCallback = async (
+//   query: Record<string, string | undefined>
+// ) => {
+//   const paymentID = query.paymentID;
+
+//   const status = query.status;
+
+//   if (!paymentID) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       "Payment ID Missing"
+//     );
+//   }
+
+//   if (!status) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       "Payment Status Missing"
+//     );
+//   }
+
+//   const payment =
+//     await prisma.payment.findUnique({
+//       where: {
+//         bkashPaymentId: paymentID,
+//       },
+
+//       include: {
+//         bloodRequest: {
+//           select: {
+//             id: true,
+//             recipientId: true,
+//           },
+//         },
+//       },
+//     });
+
+//   if (!payment) {
+//     throw new AppError(
+//       httpStatus.NOT_FOUND,
+//       "Payment Not Found"
+//     );
+//   }
+
+
+
+//   if (status === "cancel") {
+//     const updatedPayment =
+//       await prisma.payment.update({
+//         where: {
+//           id: payment.id,
+//         },
+
+//         data: {
+//           status:
+//             PaymentStatus.CANCELLED,
+
+//           gatewayResponse: {
+//             callbackStatus: status,
+//             paymentID,
+//           },
+//         },
+//       });
+
+//     // Audit log
+//     await createAuditLog({
+//       userId:
+//         payment.bloodRequest.recipientId,
+
+//       action:
+//         AuditAction.PAYMENT,
+
+//       entity: "Payment",
+
+//       entityId:
+//         updatedPayment.id,
+
+//       details: {
+//         bloodRequestId:
+//           updatedPayment.bloodRequestId,
+
+//         amount:
+//           updatedPayment.amount.toString(),
+
+//         currency:
+//           updatedPayment.currency,
+
+//         method:
+//           updatedPayment.method,
+
+//         status:
+//           updatedPayment.status,
+
+//         message:
+//           "Payment cancelled by user",
+//       },
+//     });
+
+//     return {
+//       payment: updatedPayment,
+//       status: "cancel",
+//       message: "Payment Cancelled",
+//     };
+//   }
+
+
+
+//   if (status === "failure") {
+//     const updatedPayment =
+//       await prisma.payment.update({
+//         where: {
+//           id: payment.id,
+//         },
+
+//         data: {
+//           status:
+//             PaymentStatus.FAILED,
+
+//           gatewayResponse: {
+//             callbackStatus: status,
+//             paymentID,
+//           },
+//         },
+//       });
+
+//     // Audit log
+//     await createAuditLog({
+//       userId:
+//         payment.bloodRequest.recipientId,
+
+//       action:
+//         AuditAction.PAYMENT,
+
+//       entity: "Payment",
+
+//       entityId:
+//         updatedPayment.id,
+
+//       details: {
+//         bloodRequestId:
+//           updatedPayment.bloodRequestId,
+
+//         amount:
+//           updatedPayment.amount.toString(),
+
+//         currency:
+//           updatedPayment.currency,
+
+//         method:
+//           updatedPayment.method,
+
+//         status:
+//           updatedPayment.status,
+
+//         message:
+//           "Payment failed",
+//       },
+//     });
+
+//     return {
+//       payment: updatedPayment,
+//       status: "failure",
+//       message: "Payment Failed",
+//     };
+//   }
+
+//   // ----------------------------------------------
+//   // SUCCESS
+//   // ----------------------------------------------
+
+//   if (status === "success") {
+//     const executeResult =
+//       await executeBkashPayment(
+//         paymentID
+//       );
+
+//     return {
+//       payment: executeResult,
+//       status: "success",
+//       message:
+//         "Payment Completed Successfully",
+//     };
+//   }
+
+//   throw new AppError(
+//     httpStatus.BAD_REQUEST,
+//     "Unknown Payment Status"
+//   );
+// };
+
 const executeBkashPayment = async (
   paymentID: string
 ) => {
@@ -333,6 +749,10 @@ const executeBkashPayment = async (
 
   const executeUrl =
     `${config.bkash_base_url}/tokenized/checkout/execute`;
+
+  console.log(
+    "========== bKash EXECUTE =========="
+  );
 
   console.log(
     "bKash Execute URL:",
@@ -352,8 +772,7 @@ const executeBkashPayment = async (
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: bkashIdToken,
-        "X-App-Key":
-          config.bkash_app_key,
+        "X-App-Key": config.bkash_app_key,
       },
       body: JSON.stringify({
         paymentID,
@@ -374,6 +793,10 @@ const executeBkashPayment = async (
     result
   );
 
+  console.log(
+    "===================================="
+  );
+
   if (!response.ok) {
     throw new AppError(
       httpStatus.BAD_GATEWAY,
@@ -387,7 +810,6 @@ const executeBkashPayment = async (
       where: {
         bkashPaymentId: paymentID,
       },
-
       include: {
         bloodRequest: {
           select: {
@@ -407,18 +829,29 @@ const executeBkashPayment = async (
 
   // Already paid
   if (
-    payment.status ===
-    PaymentStatus.PAID
+    payment.status === PaymentStatus.PAID
   ) {
+    console.log(
+      "Payment already marked as PAID."
+    );
+
     return payment;
   }
 
   // Successful payment
   if (
-    result.transactionStatus ===
-      "Completed" &&
+    result.transactionStatus === "Completed" &&
     result.trxID
   ) {
+    console.log(
+      "========== bKash PAYMENT COMPLETED =========="
+    );
+
+    console.log(
+      "Transaction ID:",
+      result.trxID
+    );
+
     // ------------------------------------------
     // 1. Update payment as PAID
     // ------------------------------------------
@@ -428,16 +861,10 @@ const executeBkashPayment = async (
         where: {
           id: payment.id,
         },
-
         data: {
-          status:
-            PaymentStatus.PAID,
-
-          transactionId:
-            result.trxID,
-
+          status: PaymentStatus.PAID,
+          transactionId: result.trxID,
           paidAt: new Date(),
-
           gatewayResponse:
             JSON.parse(
               JSON.stringify(result)
@@ -445,300 +872,281 @@ const executeBkashPayment = async (
         },
       });
 
+    console.log(
+      "✅ Payment status updated to PAID"
+    );
 
+    // ------------------------------------------
+    // 2. Generate receipt
+    // ------------------------------------------
 
-    const receiptPdf =
-      await generatePaymentReceipt({
-        paymentId:
-          updatedPayment.id,
+    try {
+      const receiptPdf =
+        await generatePaymentReceipt({
+          paymentId: updatedPayment.id,
 
-        transactionId:
-          result.trxID,
+          transactionId: result.trxID,
 
-        amount:
-          updatedPayment.amount.toString(),
+          amount:
+            updatedPayment.amount.toString(),
 
-        currency:
-          updatedPayment.currency,
+          currency:
+            updatedPayment.currency,
 
-        method:
-          updatedPayment.method,
+          method:
+            updatedPayment.method,
 
-        paidAt:
-          updatedPayment.paidAt!,
+          paidAt:
+            updatedPayment.paidAt!,
 
-        bloodRequestId:
-          updatedPayment.bloodRequestId,
-      });
+          bloodRequestId:
+            updatedPayment.bloodRequestId,
+        });
 
-    
-
-    const uploadedReceipt =
-      await uploadToCloudinary(
-        receiptPdf,
-        "bloodlink/payment-receipts"
+      console.log(
+        "✅ Payment receipt generated"
       );
 
-    // ------------------------------------------
-    // 4. Save PDF URL
-    // ------------------------------------------
+      // ------------------------------------------
+      // 3. Upload receipt
+      // ------------------------------------------
 
-    const paymentWithReceipt =
-      await prisma.payment.update({
-        where: {
-          id: updatedPayment.id,
-        },
+      try {
+        const uploadedReceipt =
+          await uploadToCloudinary(
+            receiptPdf,
+            "bloodlink/payment-receipts"
+          );
 
-        data: {
-          receiptPdfUrl:
-            uploadedReceipt.secure_url,
-        },
-      });
+        console.log(
+          "✅ Receipt uploaded to Cloudinary:",
+          uploadedReceipt.secure_url
+        );
 
-    // ------------------------------------------
-    // 5. Audit log
-    // ------------------------------------------
+        // ------------------------------------------
+        // 4. Save receipt URL
+        // ------------------------------------------
 
-    await createAuditLog({
-      userId:
-        payment.bloodRequest.recipientId,
+        const paymentWithReceipt =
+          await prisma.payment.update({
+            where: {
+              id: updatedPayment.id,
+            },
+            data: {
+              receiptPdfUrl:
+                uploadedReceipt.secure_url,
+            },
+          });
 
-      action:
-        AuditAction.PAYMENT,
+        console.log(
+          "✅ Receipt URL saved"
+        );
 
-      entity: "Payment",
+        // ------------------------------------------
+        // 5. Audit log
+        // ------------------------------------------
 
-      entityId:
-        paymentWithReceipt.id,
+        try {
+          await createAuditLog({
+            userId:
+              payment.bloodRequest.recipientId,
 
-      details: {
-        bloodRequestId:
-          paymentWithReceipt.bloodRequestId,
+            action:
+              AuditAction.PAYMENT,
 
-        amount:
-          paymentWithReceipt.amount.toString(),
+            entity: "Payment",
 
-        currency:
-          paymentWithReceipt.currency,
+            entityId:
+              paymentWithReceipt.id,
 
-        method:
-          paymentWithReceipt.method,
+            details: {
+              bloodRequestId:
+                paymentWithReceipt.bloodRequestId,
 
-        status:
-          paymentWithReceipt.status,
+              amount:
+                paymentWithReceipt.amount.toString(),
 
-        transactionId:
-          paymentWithReceipt.transactionId,
+              currency:
+                paymentWithReceipt.currency,
 
-        receiptPdfUrl:
-          paymentWithReceipt.receiptPdfUrl,
+              method:
+                paymentWithReceipt.method,
 
-        message:
-          "Payment completed and receipt PDF uploaded successfully",
-      },
-    });
+              status:
+                paymentWithReceipt.status,
 
-    return paymentWithReceipt;
+              transactionId:
+                paymentWithReceipt.transactionId,
+
+              receiptPdfUrl:
+                paymentWithReceipt.receiptPdfUrl,
+
+              message:
+                "Payment completed and receipt PDF uploaded successfully",
+            },
+          });
+
+          console.log(
+            "✅ Payment audit log created"
+          );
+        } catch (auditError) {
+          console.error(
+            "⚠️ Audit log failed:",
+            auditError
+          );
+        }
+
+        return paymentWithReceipt;
+      } catch (cloudinaryError) {
+        console.error(
+          "⚠️ Cloudinary upload failed:",
+          cloudinaryError
+        );
+
+        return updatedPayment;
+      }
+    } catch (receiptError) {
+      console.error(
+        "⚠️ Receipt generation failed:",
+        receiptError
+      );
+
+      return updatedPayment;
+    }
   }
+
+  console.log(
+    "⚠️ bKash payment was not completed:",
+    result.transactionStatus
+  );
 
   return result;
 };
 
+const bkashCallback = async (query: IQuery) => {
+  console.log("========== bKash CALLBACK ==========");
+  console.log("Callback Query:", query);
+  console.log("====================================");
 
-const bkashCallback = async (
-  query: Record<string, string | undefined>
-) => {
-  const paymentID = query.paymentID;
+  const { paymentID, status } = query;
 
-  const status = query.status;
 
   if (!paymentID) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "Payment ID Missing"
+      "Payment ID is missing"
     );
   }
 
-  if (!status) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Payment Status Missing"
-    );
-  }
-
-  const payment =
-    await prisma.payment.findUnique({
-      where: {
-        bkashPaymentId: paymentID,
-      },
-
-      include: {
-        bloodRequest: {
-          select: {
-            id: true,
-            recipientId: true,
-          },
+  const payment = await prisma.payment.findUnique({
+    where: {
+      bkashPaymentId: paymentID,
+    },
+    include: {
+      bloodRequest: {
+        select: {
+          id: true,
+          recipientId: true,
         },
       },
-    });
+    },
+  });
 
   if (!payment) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      "Payment Not Found"
+      "Payment not found"
     );
   }
 
-
-
   if (status === "cancel") {
-    const updatedPayment =
-      await prisma.payment.update({
-        where: {
-          id: payment.id,
+    console.log("========== bKash CANCEL ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("==================================");
+
+    const updatedPayment = await prisma.payment.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        status: PaymentStatus.CANCELLED,
+        gatewayResponse: {
+          callbackStatus: status,
+          paymentID,
+          signature: query.signature,
+          apiVersion: query.apiVersion,
         },
-
-        data: {
-          status:
-            PaymentStatus.CANCELLED,
-
-          gatewayResponse: {
-            callbackStatus: status,
-            paymentID,
-          },
-        },
-      });
-
-    // Audit log
-    await createAuditLog({
-      userId:
-        payment.bloodRequest.recipientId,
-
-      action:
-        AuditAction.PAYMENT,
-
-      entity: "Payment",
-
-      entityId:
-        updatedPayment.id,
-
-      details: {
-        bloodRequestId:
-          updatedPayment.bloodRequestId,
-
-        amount:
-          updatedPayment.amount.toString(),
-
-        currency:
-          updatedPayment.currency,
-
-        method:
-          updatedPayment.method,
-
-        status:
-          updatedPayment.status,
-
-        message:
-          "Payment cancelled by user",
       },
     });
 
     return {
-      payment: updatedPayment,
       status: "cancel",
       message: "Payment Cancelled",
+      data: updatedPayment,
     };
   }
 
-
-
   if (status === "failure") {
-    const updatedPayment =
-      await prisma.payment.update({
-        where: {
-          id: payment.id,
+    console.log("========== bKash FAILURE ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("===================================");
+
+    const updatedPayment = await prisma.payment.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        status: PaymentStatus.FAILED,
+        gatewayResponse: {
+          callbackStatus: status,
+          paymentID,
+          signature: query.signature,
+          apiVersion: query.apiVersion,
         },
-
-        data: {
-          status:
-            PaymentStatus.FAILED,
-
-          gatewayResponse: {
-            callbackStatus: status,
-            paymentID,
-          },
-        },
-      });
-
-    // Audit log
-    await createAuditLog({
-      userId:
-        payment.bloodRequest.recipientId,
-
-      action:
-        AuditAction.PAYMENT,
-
-      entity: "Payment",
-
-      entityId:
-        updatedPayment.id,
-
-      details: {
-        bloodRequestId:
-          updatedPayment.bloodRequestId,
-
-        amount:
-          updatedPayment.amount.toString(),
-
-        currency:
-          updatedPayment.currency,
-
-        method:
-          updatedPayment.method,
-
-        status:
-          updatedPayment.status,
-
-        message:
-          "Payment failed",
       },
     });
 
     return {
-      payment: updatedPayment,
       status: "failure",
       message: "Payment Failed",
+      data: updatedPayment,
     };
   }
 
-  // ----------------------------------------------
+  // =========================
   // SUCCESS
-  // ----------------------------------------------
-
+  // =========================
   if (status === "success") {
-    const executeResult =
-      await executeBkashPayment(
-        paymentID
-      );
+    console.log("========== bKash SUCCESS ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("===================================");
+
+    const result = await executeBkashPayment(paymentID);
 
     return {
-      payment: executeResult,
       status: "success",
-      message:
-        "Payment Completed Successfully",
+      message: "Payment completed successfully",
+      data: result,
     };
   }
+
+  // =========================
+  // UNKNOWN STATUS
+  // =========================
+  console.log("========== UNKNOWN bKash STATUS ==========");
+  console.log("Payment ID:", paymentID);
+  console.log("Status:", status);
+  console.log("Callback Query:", query);
+  console.log("==========================================");
 
   throw new AppError(
     httpStatus.BAD_REQUEST,
-    "Unknown Payment Status"
+    `Unknown bKash callback status: ${status}`
   );
 };
-
-
-
-
-
 const getMyPayments = async (
   query: IQuery,
   recipientId: string
