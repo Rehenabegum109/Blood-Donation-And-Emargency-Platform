@@ -152,6 +152,7 @@ var config = {
   port: process.env.PORT || 5e3,
   node_env: process.env.NODE_ENV,
   database_url: process.env.DATABASE_URL,
+  frontend_url: process.env.FRONTEND_URL,
   redis_user: process.env.REDIS_USER,
   redis_password: process.env.REDIS_PASSWORD,
   redis_host: process.env.REDIS_HOST,
@@ -414,33 +415,47 @@ var register = async (payload) => {
   if (existingUser) {
     throw new Error("User already exists with this email");
   }
+  if (payload.role === Role.DONOR && !payload.bloodGroup) {
+    throw new Error("Blood group is required for donors");
+  }
   const hashedPassword = await import_bcrypt.default.hash(
     payload.password,
     10
   );
-  const user = await prisma.user.create({
-    data: {
-      name: payload.name,
-      email,
-      password: hashedPassword,
-      phone: payload.phone ?? null,
-      location: payload.location ?? null,
-      role: Role.RECIPIENT,
-      status: AccountStatus.ACTIVE,
-      emailVerified: false
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-      phone: true,
-      location: true,
-      emailVerified: true,
-      createdAt: true,
-      updatedAt: true
+  const user = await prisma.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        name: payload.name,
+        email,
+        password: hashedPassword,
+        phone: payload.phone ?? null,
+        location: payload.location ?? null,
+        role: payload.role,
+        status: AccountStatus.ACTIVE,
+        emailVerified: false
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        phone: true,
+        location: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    if (createdUser.role === Role.DONOR) {
+      await tx.donor.create({
+        data: {
+          userId: createdUser.id,
+          bloodGroup: payload.bloodGroup
+        }
+      });
     }
+    return createdUser;
   });
   const otp = import_crypto.default.randomInt(1e5, 1e6).toString();
   await ensureRedisConnected();
@@ -839,8 +854,27 @@ var RegisterZodSchema = import_zod.z.object({
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
     "Password must contain uppercase, lowercase, number and special character"
   ),
+  role: import_zod.z.enum(["DONOR", "RECIPIENT"]),
   phone: import_zod.z.string().min(10, "Phone number must be at least 10 characters").max(15, "Phone number must be at most 15 characters").optional(),
-  location: import_zod.z.string().optional()
+  location: import_zod.z.string().optional(),
+  bloodGroup: import_zod.z.enum([
+    "A_POSITIVE",
+    "A_NEGATIVE",
+    "B_POSITIVE",
+    "B_NEGATIVE",
+    "AB_POSITIVE",
+    "AB_NEGATIVE",
+    "O_POSITIVE",
+    "O_NEGATIVE"
+  ]).optional()
+}).superRefine((data, ctx) => {
+  if (data.role === "DONOR" && !data.bloodGroup) {
+    ctx.addIssue({
+      code: import_zod.z.ZodIssueCode.custom,
+      path: ["bloodGroup"],
+      message: "Blood group is required for donors"
+    });
+  }
 });
 var LoginZodSchema = import_zod.z.object({
   email: import_zod.z.string().email("Invalid email address"),
@@ -894,7 +928,6 @@ var catchAsync = (fn) => {
 // src/modules/auth/auth.controller.ts
 var register2 = catchAsync(
   async (req, res) => {
-    console.log("REQ BODY:", req.body);
     const payload = authValidation.RegisterZodSchema.safeParse(req.body);
     if (!payload.success) {
       const errorMessage = payload.error.issues.map((issue) => issue.message).join(" ");
@@ -1044,6 +1077,32 @@ var resetPassword2 = catchAsync(
     });
   }
 );
+var logout = catchAsync(
+  async (req, res) => {
+    res.clearCookie(
+      "accessToken",
+      {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+      }
+    );
+    res.clearCookie(
+      "refreshToken",
+      {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+      }
+    );
+    sendResponse(res, {
+      statusCode: import_http_status3.default.OK,
+      success: true,
+      message: "User logged out successfully",
+      data: null
+    });
+  }
+);
 var AuthController = {
   register: register2,
   verifyEmail: verifyEmail2,
@@ -1051,7 +1110,8 @@ var AuthController = {
   googleLogin: googleLogin2,
   refreshAccessToken: refreshAccessToken2,
   forgotPassword: forgotPassword2,
-  resetPassword: resetPassword2
+  resetPassword: resetPassword2,
+  logout
 };
 
 // src/middlewares/validateRequest.ts
@@ -1069,6 +1129,49 @@ var validateRequest = (schema) => {
     }
     req.body = result.data;
     next();
+  };
+};
+
+// src/middlewares/auth.ts
+var import_jsonwebtoken2 = __toESM(require("jsonwebtoken"));
+var import_http_status4 = __toESM(require("http-status"));
+var auth = (...allowedRoles) => {
+  return async (req, res, next) => {
+    try {
+      const token = req.cookies?.accessToken || req.get("authorization")?.replace("Bearer ", "");
+      if (!token) {
+        return res.status(import_http_status4.default.UNAUTHORIZED).json({
+          success: false,
+          statusCode: import_http_status4.default.UNAUTHORIZED,
+          message: "You are not logged in",
+          data: null
+        });
+      }
+      const decoded = import_jsonwebtoken2.default.verify(
+        token,
+        config_default.jwt_access_secret
+      );
+      if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
+        return res.status(import_http_status4.default.FORBIDDEN).json({
+          success: false,
+          statusCode: import_http_status4.default.FORBIDDEN,
+          message: "You do not have permission to access this resource",
+          data: null
+        });
+      }
+      req.user = {
+        id: decoded.id,
+        role: decoded.role
+      };
+      next();
+    } catch (error) {
+      return res.status(import_http_status4.default.UNAUTHORIZED).json({
+        success: false,
+        statusCode: import_http_status4.default.UNAUTHORIZED,
+        message: "Invalid or expired access token",
+        data: null
+      });
+    }
   };
 };
 
@@ -1108,13 +1211,14 @@ router.post(
   validateRequest(authValidation.ResetPasswordZodSchema),
   AuthController.resetPassword
 );
+router.post("/logout", auth(), AuthController.logout);
 var AuthRoutes = router;
 
 // src/modules/user/user.route.ts
 var import_express2 = require("express");
 
 // src/modules/user/user.controller.ts
-var import_http_status4 = __toESM(require("http-status"));
+var import_http_status5 = __toESM(require("http-status"));
 
 // src/modules/user/user.service.ts
 var getMyProfile = async (userId) => {
@@ -1197,7 +1301,7 @@ var getMyProfile2 = catchAsync(
     }
     const result = await UserService.getMyProfile(userId);
     sendResponse(res, {
-      statusCode: import_http_status4.default.OK,
+      statusCode: import_http_status5.default.OK,
       success: true,
       message: "Profile retrieved successfully",
       data: result
@@ -1215,7 +1319,7 @@ var updateMyProfile2 = catchAsync(
       req.body
     );
     sendResponse(res, {
-      statusCode: import_http_status4.default.OK,
+      statusCode: import_http_status5.default.OK,
       success: true,
       message: "Profile updated successfully",
       data: result
@@ -1225,49 +1329,6 @@ var updateMyProfile2 = catchAsync(
 var UserController = {
   getMyProfile: getMyProfile2,
   updateMyProfile: updateMyProfile2
-};
-
-// src/middlewares/auth.ts
-var import_jsonwebtoken2 = __toESM(require("jsonwebtoken"));
-var import_http_status5 = __toESM(require("http-status"));
-var auth = (...allowedRoles) => {
-  return async (req, res, next) => {
-    try {
-      const token = req.cookies?.accessToken || req.get("authorization")?.replace("Bearer ", "");
-      if (!token) {
-        return res.status(import_http_status5.default.UNAUTHORIZED).json({
-          success: false,
-          statusCode: import_http_status5.default.UNAUTHORIZED,
-          message: "You are not logged in",
-          data: null
-        });
-      }
-      const decoded = import_jsonwebtoken2.default.verify(
-        token,
-        config_default.jwt_access_secret
-      );
-      if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
-        return res.status(import_http_status5.default.FORBIDDEN).json({
-          success: false,
-          statusCode: import_http_status5.default.FORBIDDEN,
-          message: "You do not have permission to access this resource",
-          data: null
-        });
-      }
-      req.user = {
-        id: decoded.id,
-        role: decoded.role
-      };
-      next();
-    } catch (error) {
-      return res.status(import_http_status5.default.UNAUTHORIZED).json({
-        success: false,
-        statusCode: import_http_status5.default.UNAUTHORIZED,
-        message: "Invalid or expired access token",
-        data: null
-      });
-    }
-  };
 };
 
 // src/modules/user/user.validation.ts
@@ -1402,12 +1463,13 @@ var createBloodRequest = async (recipientId, payload) => {
   });
   return bloodRequest;
 };
-var getAllBloodRequests = async (page, limit, status, bloodGroup, sortBy = "createdAt", sortOrder = "desc") => {
+var getAllBloodRequests = async (page, limit, status, bloodGroup, sortBy = "createdAt", sortOrder = "desc", verificationStatus) => {
   const skip = (page - 1) * limit;
   const where = {
     deletedAt: null,
     ...status ? { status } : {},
-    ...bloodGroup ? { bloodGroup } : {}
+    ...bloodGroup ? { bloodGroup } : {},
+    ...verificationStatus ? { verificationStatus } : {}
   };
   const [requests, total] = await Promise.all([
     prisma.bloodRequest.findMany({
@@ -1742,18 +1804,19 @@ var getAllBloodRequests2 = catchAsync(
     const query = req.query;
     const limit = query.limit ? Number(query.limit) : 10;
     const page = query.page ? Number(query.page) : 1;
-    const skip = (page - 1) * limit;
     const sortBy = query.sortBy ? String(query.sortBy) : "createdAt";
     const sortOrder = query.sortOrder ? String(query.sortOrder) : "desc";
     const status = typeof query.status === "string" ? query.status : void 0;
     const bloodGroup = typeof query.bloodGroup === "string" ? query.bloodGroup : void 0;
+    const verificationStatus = typeof query.verificationStatus === "string" ? query.verificationStatus : void 0;
     const result = await BloodRequestService.getAllBloodRequests(
       page,
       limit,
       status,
       bloodGroup,
       sortBy,
-      sortOrder
+      sortOrder,
+      verificationStatus
     );
     sendResponse(res, {
       statusCode: import_http_status6.default.OK,
@@ -1986,6 +2049,11 @@ var createDonation = async (donorUserId, payload) => {
       "Donation cannot be created for this blood request"
     );
   }
+  if (bloodRequest.verificationStatus !== "VERIFIED") {
+    throw new Error(
+      "This blood request has not been verified by admin"
+    );
+  }
   if (!donor.isAvailable) {
     throw new Error("Donor is currently unavailable");
   }
@@ -2019,7 +2087,7 @@ var createDonation = async (donorUserId, payload) => {
     details: {
       bloodRequestId: payload.bloodRequestId,
       units: donation.units,
-      message: "Donation request created by donor"
+      message: "Blood request accepted by donor"
     }
   });
   return donation;
@@ -2034,7 +2102,7 @@ var getMyDonations = async (donorUserId, page = 1, limit = 10) => {
     throw new Error("Donor profile not found");
   }
   const skip = (page - 1) * limit;
-  const [donations, total] = await prisma.$transaction([
+  const [donations, total] = await Promise.all([
     prisma.donation.findMany({
       where: {
         donorId: donor.id
@@ -2055,6 +2123,7 @@ var getMyDonations = async (donorUserId, page = 1, limit = 10) => {
             requiredDate: true,
             urgency: true,
             status: true,
+            verificationStatus: true,
             patientName: true
           }
         }
@@ -2063,6 +2132,55 @@ var getMyDonations = async (donorUserId, page = 1, limit = 10) => {
     prisma.donation.count({
       where: {
         donorId: donor.id
+      }
+    })
+  ]);
+  return {
+    data: donations,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit)
+    }
+  };
+};
+var getReceivedDonations = async (recipientId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const [donations, total] = await Promise.all([
+    prisma.donation.findMany({
+      where: {
+        bloodRequest: {
+          recipientId
+        }
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc"
+      },
+      include: {
+        bloodRequest: {
+          select: {
+            id: true,
+            bloodGroup: true,
+            units: true,
+            hospitalName: true,
+            hospitalAddress: true,
+            requiredDate: true,
+            urgency: true,
+            status: true,
+            verificationStatus: true,
+            patientName: true
+          }
+        }
+      }
+    }),
+    prisma.donation.count({
+      where: {
+        bloodRequest: {
+          recipientId
+        }
       }
     })
   ]);
@@ -2219,9 +2337,67 @@ var rejectDonation = async (donationId, recipientId) => {
   });
   return updatedDonation;
 };
+var cancelDonation = async (donationId, donorUserId) => {
+  const donor = await prisma.donor.findUnique({
+    where: {
+      userId: donorUserId
+    }
+  });
+  if (!donor) {
+    throw new Error("Donor profile not found");
+  }
+  const donation = await prisma.donation.findUnique({
+    where: {
+      id: donationId
+    },
+    include: {
+      bloodRequest: true
+    }
+  });
+  if (!donation) {
+    throw new Error("Donation not found");
+  }
+  if (donation.donorId !== donor.id) {
+    throw new Error(
+      "You can only cancel your own donation"
+    );
+  }
+  if (donation.status !== DonationStatus.ACCEPTED) {
+    throw new Error(
+      "Only accepted donations can be cancelled"
+    );
+  }
+  if (donation.bloodRequest.status === BloodRequestStatus.FULFILLED) {
+    throw new Error(
+      "You cannot cancel a donation after the blood request is fulfilled"
+    );
+  }
+  const cancelledDonation = await prisma.donation.update({
+    where: {
+      id: donationId
+    },
+    data: {
+      status: DonationStatus.CANCELLED
+    }
+  });
+  await createAuditLog({
+    userId: donorUserId,
+    action: AuditAction.UPDATE,
+    entity: "Donation",
+    entityId: donationId,
+    details: {
+      bloodRequestId: donation.bloodRequestId,
+      units: donation.units,
+      message: "Donation cancelled by donor"
+    }
+  });
+  return cancelledDonation;
+};
 var DonationService = {
   createDonation,
   getMyDonations,
+  getReceivedDonations,
+  cancelDonation,
   approveDonation,
   rejectDonation
 };
@@ -2262,6 +2438,23 @@ var getMyDonations2 = catchAsync(
       statusCode: import_http_status7.default.OK,
       success: true,
       message: "My donations retrieved successfully",
+      data: result
+    });
+  }
+);
+var getReceivedDonations2 = catchAsync(
+  async (req, res) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const result = await DonationService.getReceivedDonations(
+      req.user.id,
+      page,
+      limit
+    );
+    sendResponse(res, {
+      statusCode: import_http_status7.default.OK,
+      success: true,
+      message: "Received donations retrieved successfully",
       data: result
     });
   }
@@ -2310,10 +2503,30 @@ var rejectDonation2 = catchAsync(
     });
   }
 );
+var cancelDonation2 = catchAsync(
+  async (req, res) => {
+    const donationId = req.params.id;
+    if (!donationId || Array.isArray(donationId)) {
+      throw new Error("Invalid donation ID");
+    }
+    const result = await DonationService.cancelDonation(
+      donationId,
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: import_http_status7.default.OK,
+      success: true,
+      message: "Donation cancelled successfully",
+      data: result
+    });
+  }
+);
 var DonationController = {
   createDonation: createDonation2,
   getMyDonations: getMyDonations2,
+  getReceivedDonations: getReceivedDonations2,
   approveDonation: approveDonation2,
+  cancelDonation: cancelDonation2,
   rejectDonation: rejectDonation2
 };
 
@@ -2343,6 +2556,11 @@ router4.get(
   auth(Role.DONOR),
   DonationController.getMyDonations
 );
+router4.get(
+  "/received",
+  auth(Role.RECIPIENT),
+  DonationController.getReceivedDonations
+);
 router4.patch(
   "/:id/approve",
   auth(Role.RECIPIENT),
@@ -2352,6 +2570,11 @@ router4.patch(
   "/:id/reject",
   auth(Role.RECIPIENT),
   DonationController.rejectDonation
+);
+router4.patch(
+  "/:id/cancel",
+  auth(Role.DONOR),
+  DonationController.cancelDonation
 );
 var DonationRoutes = router4;
 
@@ -2523,57 +2746,6 @@ var uploadToCloudinary = (buffer, folder) => {
       }
     );
     import_streamifier.default.createReadStream(buffer).pipe(uploadStream);
-  });
-};
-
-// src/utils/generatePaymentReceipt.ts
-var import_pdfkit = __toESM(require("pdfkit"));
-var generatePaymentReceipt = (data) => {
-  return new Promise((resolve, reject) => {
-    const doc = new import_pdfkit.default({
-      size: "A4",
-      margin: 50
-    });
-    const chunks = [];
-    doc.on("data", (chunk) => {
-      chunks.push(chunk);
-    });
-    doc.on("end", () => {
-      resolve(Buffer.concat(chunks));
-    });
-    doc.on("error", (error) => {
-      reject(error);
-    });
-    doc.fontSize(22).font("Helvetica-Bold").text("BloodLink Payment Receipt", {
-      align: "center"
-    });
-    doc.moveDown(2);
-    doc.fontSize(12).font("Helvetica");
-    doc.text(`Payment ID: ${data.paymentId}`);
-    doc.moveDown(0.5);
-    doc.text(`Transaction ID: ${data.transactionId}`);
-    doc.moveDown(0.5);
-    doc.text(`Blood Request ID: ${data.bloodRequestId}`);
-    doc.moveDown(0.5);
-    doc.text(`Amount: ${data.amount} ${data.currency}`);
-    doc.moveDown(0.5);
-    doc.text(`Payment Method: ${data.method}`);
-    doc.moveDown(0.5);
-    doc.text(
-      `Paid At: ${data.paidAt.toISOString()}`
-    );
-    doc.moveDown(2);
-    doc.fontSize(14).font("Helvetica-Bold").text("Payment Status: PAID", {
-      align: "center"
-    });
-    doc.moveDown(2);
-    doc.fontSize(10).font("Helvetica").text(
-      "Thank you for using BloodLink.",
-      {
-        align: "center"
-      }
-    );
-    doc.end();
   });
 };
 
@@ -2770,6 +2942,8 @@ var initiatePayment = async (recipientId, payload) => {
   };
 };
 var executeBkashPayment = async (paymentID) => {
+  console.log("========== bKash EXECUTE ==========");
+  console.log("Payment ID:", paymentID);
   const bkashIdToken = await getBkashIdToken();
   if (!bkashIdToken) {
     throw new AppError(
@@ -2835,10 +3009,28 @@ var executeBkashPayment = async (paymentID) => {
       "Payment Record Not Found"
     );
   }
+  console.log(
+    "Database Payment ID:",
+    payment.id
+  );
+  console.log(
+    "Current Payment Status:",
+    payment.status
+  );
   if (payment.status === PaymentStatus.PAID) {
+    console.log(
+      "\u2705 Payment is already PAID"
+    );
     return payment;
   }
   if (result.transactionStatus === "Completed" && result.trxID) {
+    console.log(
+      "========== PAYMENT COMPLETED =========="
+    );
+    console.log(
+      "Transaction ID:",
+      result.trxID
+    );
     const updatedPayment = await prisma.payment.update({
       where: {
         id: payment.id
@@ -2852,60 +3044,40 @@ var executeBkashPayment = async (paymentID) => {
         )
       }
     });
-    const receiptPdf = await generatePaymentReceipt({
-      paymentId: updatedPayment.id,
-      transactionId: result.trxID,
-      amount: updatedPayment.amount.toString(),
-      currency: updatedPayment.currency,
-      method: updatedPayment.method,
-      paidAt: updatedPayment.paidAt,
-      bloodRequestId: updatedPayment.bloodRequestId
-    });
-    const uploadedReceipt = await uploadToCloudinary(
-      receiptPdf,
-      "bloodlink/payment-receipts"
+    console.log(
+      "\u2705 Payment updated to PAID"
     );
-    const paymentWithReceipt = await prisma.payment.update({
-      where: {
-        id: updatedPayment.id
-      },
-      data: {
-        receiptPdfUrl: uploadedReceipt.secure_url
-      }
-    });
-    await createAuditLog({
-      userId: payment.bloodRequest.recipientId,
-      action: AuditAction.PAYMENT,
-      entity: "Payment",
-      entityId: paymentWithReceipt.id,
-      details: {
-        bloodRequestId: paymentWithReceipt.bloodRequestId,
-        amount: paymentWithReceipt.amount.toString(),
-        currency: paymentWithReceipt.currency,
-        method: paymentWithReceipt.method,
-        status: paymentWithReceipt.status,
-        transactionId: paymentWithReceipt.transactionId,
-        receiptPdfUrl: paymentWithReceipt.receiptPdfUrl,
-        message: "Payment completed and receipt PDF uploaded successfully"
-      }
-    });
-    return paymentWithReceipt;
+    console.log(
+      "Transaction ID saved:",
+      updatedPayment.transactionId
+    );
+    console.log(
+      "Payment status:",
+      updatedPayment.status
+    );
+    console.log(
+      "\u2705 bKash payment execution successful"
+    );
+    console.log(
+      "\u2705 Returning PAID payment"
+    );
+    return updatedPayment;
   }
+  console.log(
+    "\u26A0\uFE0F Payment not completed:",
+    result.transactionStatus
+  );
   return result;
 };
 var bkashCallback = async (query) => {
-  const paymentID = query.paymentID;
-  const status = query.status;
+  console.log("========== bKash CALLBACK ==========");
+  console.log("Callback Query:", query);
+  console.log("====================================");
+  const { paymentID, status } = query;
   if (!paymentID) {
     throw new AppError(
       import_http_status8.default.BAD_REQUEST,
-      "Payment ID Missing"
-    );
-  }
-  if (!status) {
-    throw new AppError(
-      import_http_status8.default.BAD_REQUEST,
-      "Payment Status Missing"
+      "Payment ID is missing"
     );
   }
   const payment = await prisma.payment.findUnique({
@@ -2924,10 +3096,14 @@ var bkashCallback = async (query) => {
   if (!payment) {
     throw new AppError(
       import_http_status8.default.NOT_FOUND,
-      "Payment Not Found"
+      "Payment not found"
     );
   }
   if (status === "cancel") {
+    console.log("========== bKash CANCEL ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("==================================");
     const updatedPayment = await prisma.payment.update({
       where: {
         id: payment.id
@@ -2936,31 +3112,23 @@ var bkashCallback = async (query) => {
         status: PaymentStatus.CANCELLED,
         gatewayResponse: {
           callbackStatus: status,
-          paymentID
+          paymentID,
+          signature: query.signature,
+          apiVersion: query.apiVersion
         }
       }
     });
-    await createAuditLog({
-      userId: payment.bloodRequest.recipientId,
-      action: AuditAction.PAYMENT,
-      entity: "Payment",
-      entityId: updatedPayment.id,
-      details: {
-        bloodRequestId: updatedPayment.bloodRequestId,
-        amount: updatedPayment.amount.toString(),
-        currency: updatedPayment.currency,
-        method: updatedPayment.method,
-        status: updatedPayment.status,
-        message: "Payment cancelled by user"
-      }
-    });
     return {
-      payment: updatedPayment,
       status: "cancel",
-      message: "Payment Cancelled"
+      message: "Payment Cancelled",
+      data: updatedPayment
     };
   }
   if (status === "failure") {
+    console.log("========== bKash FAILURE ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("===================================");
     const updatedPayment = await prisma.payment.update({
       where: {
         id: payment.id
@@ -2969,43 +3137,38 @@ var bkashCallback = async (query) => {
         status: PaymentStatus.FAILED,
         gatewayResponse: {
           callbackStatus: status,
-          paymentID
+          paymentID,
+          signature: query.signature,
+          apiVersion: query.apiVersion
         }
       }
     });
-    await createAuditLog({
-      userId: payment.bloodRequest.recipientId,
-      action: AuditAction.PAYMENT,
-      entity: "Payment",
-      entityId: updatedPayment.id,
-      details: {
-        bloodRequestId: updatedPayment.bloodRequestId,
-        amount: updatedPayment.amount.toString(),
-        currency: updatedPayment.currency,
-        method: updatedPayment.method,
-        status: updatedPayment.status,
-        message: "Payment failed"
-      }
-    });
     return {
-      payment: updatedPayment,
       status: "failure",
-      message: "Payment Failed"
+      message: "Payment Failed",
+      data: updatedPayment
     };
   }
   if (status === "success") {
-    const executeResult = await executeBkashPayment(
-      paymentID
-    );
+    console.log("========== bKash SUCCESS ==========");
+    console.log("Payment ID:", paymentID);
+    console.log("Callback Query:", query);
+    console.log("===================================");
+    const result = await executeBkashPayment(paymentID);
     return {
-      payment: executeResult,
       status: "success",
-      message: "Payment Completed Successfully"
+      message: "Payment completed successfully",
+      data: result
     };
   }
+  console.log("========== UNKNOWN bKash STATUS ==========");
+  console.log("Payment ID:", paymentID);
+  console.log("Status:", status);
+  console.log("Callback Query:", query);
+  console.log("==========================================");
   throw new AppError(
     import_http_status8.default.BAD_REQUEST,
-    "Unknown Payment Status"
+    `Unknown bKash callback status: ${status}`
   );
 };
 var getMyPayments = async (query, recipientId) => {
@@ -3288,9 +3451,7 @@ var executeBkashPayment2 = catchAsync(
     if (!paymentID || Array.isArray(paymentID)) {
       throw new Error("Invalid payment ID");
     }
-    const result = await PaymentService.executeBkashPayment(
-      paymentID
-    );
+    const result = await PaymentService.executeBkashPayment(paymentID);
     sendResponse(res, {
       statusCode: import_http_status9.default.OK,
       success: true,
@@ -3301,24 +3462,46 @@ var executeBkashPayment2 = catchAsync(
 );
 var bkashCallback2 = catchAsync(
   async (req, res) => {
-    const paymentID = typeof req.query.paymentID === "string" ? req.query.paymentID : void 0;
-    const status = typeof req.query.status === "string" ? req.query.status : void 0;
-    if (!paymentID) {
-      throw new Error("Payment ID missing");
+    console.log("========== bKash CALLBACK ==========");
+    console.log("Callback Query:", req.query);
+    const paymentID = typeof req.query.paymentID === "string" ? req.query.paymentID : "";
+    console.log("Payment ID:", paymentID);
+    console.log("Status:", req.query.status);
+    console.log("====================================");
+    const result = await PaymentService.bkashCallback(
+      req.query
+    );
+    console.log("bKash Service Result:", result);
+    if (result.status === "success") {
+      console.log("\u2705 Payment successful. Redirecting to frontend.");
+      return res.redirect(
+        `${config_default.frontend_url}/dashboard/recipient/payments/success?paymentID=${encodeURIComponent(
+          paymentID
+        )}`
+      );
     }
-    if (!status) {
-      throw new Error("Payment status missing");
+    if (result.status === "failure") {
+      console.log("\u274C Payment failed. Redirecting to frontend.");
+      return res.redirect(
+        `${config_default.frontend_url}/dashboard/recipient/payments?payment=failed&paymentID=${encodeURIComponent(
+          paymentID
+        )}`
+      );
     }
-    const result = await PaymentService.bkashCallback({
-      paymentID,
-      status
-    });
-    sendResponse(res, {
-      statusCode: import_http_status9.default.OK,
-      success: result.status === "success",
-      message: result.message,
-      data: result.payment
-    });
+    if (result.status === "cancel") {
+      console.log("\u26A0\uFE0F Payment cancelled. Redirecting to frontend.");
+      return res.redirect(
+        `${config_default.frontend_url}/dashboard/recipient/payments?payment=cancelled&paymentID=${encodeURIComponent(
+          paymentID
+        )}`
+      );
+    }
+    console.log("\u274C Unknown payment status.");
+    return res.redirect(
+      `${config_default.frontend_url}/dashboard/recipient/payments?payment=failed&paymentID=${encodeURIComponent(
+        paymentID
+      )}`
+    );
   }
 );
 var getMyPayments2 = catchAsync(
@@ -3342,9 +3525,7 @@ var getMyPayments2 = catchAsync(
 );
 var getAllPayments2 = catchAsync(
   async (req, res) => {
-    const result = await PaymentService.getAllPayments(
-      req.query
-    );
+    const result = await PaymentService.getAllPayments(req.query);
     sendResponse(res, {
       statusCode: import_http_status9.default.OK,
       success: true,
@@ -4144,6 +4325,91 @@ var getDashboardStats = async () => {
     }
   };
 };
+var getAllDonations = async (page = 1, limit = 10, status, bloodGroup) => {
+  const skip = (page - 1) * limit;
+  const where = {
+    ...status && {
+      status
+    },
+    ...bloodGroup && {
+      bloodRequest: {
+        bloodGroup
+      }
+    }
+  };
+  const [donations, total] = await prisma.$transaction([
+    prisma.donation.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc"
+      },
+      select: {
+        id: true,
+        donorId: true,
+        bloodRequestId: true,
+        status: true,
+        donationDate: true,
+        units: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+        donor: {
+          select: {
+            id: true,
+            bloodGroup: true,
+            lastDonationDate: true,
+            isAvailable: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true
+              }
+            }
+          }
+        },
+        bloodRequest: {
+          select: {
+            id: true,
+            bloodGroup: true,
+            units: true,
+            hospitalName: true,
+            hospitalAddress: true,
+            patientName: true,
+            contactNumber: true,
+            requiredDate: true,
+            urgency: true,
+            status: true,
+            verificationStatus: true,
+            recipient: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true
+              }
+            }
+          }
+        }
+      }
+    }),
+    prisma.donation.count({
+      where
+    })
+  ]);
+  return {
+    data: donations,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit)
+    }
+  };
+};
 var getAuditLogs = async (page = 1, limit = 10, action, entity, userId) => {
   const skip = (page - 1) * limit;
   const where = {
@@ -4187,6 +4453,7 @@ var AdminService = {
   blockUser,
   unblockUser,
   getDashboardStats,
+  getAllDonations,
   getAuditLogs
 };
 
@@ -4302,10 +4569,39 @@ var getAuditLogs2 = catchAsync(
     });
   }
 );
+var getAllDonations2 = catchAsync(
+  async (req, res) => {
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const status = typeof req.query.status === "string" ? req.query.status : void 0;
+    const bloodGroup = typeof req.query.bloodGroup === "string" ? req.query.bloodGroup : void 0;
+    if (Number.isNaN(page) || page < 1) {
+      throw new Error("Page must be a positive number");
+    }
+    if (Number.isNaN(limit) || limit < 1 || limit > 100) {
+      throw new Error(
+        "Limit must be between 1 and 100"
+      );
+    }
+    const result = await AdminService.getAllDonations(
+      page,
+      limit,
+      status,
+      bloodGroup
+    );
+    sendResponse(res, {
+      statusCode: import_http_status11.default.OK,
+      success: true,
+      message: "Donations retrieved successfully",
+      data: result
+    });
+  }
+);
 var AdminController = {
   getAllUsers: getAllUsers2,
   blockUser: blockUser2,
   unblockUser: unblockUser2,
+  getAllDonations: getAllDonations2,
   getDashboardStats: getDashboardStats2,
   getAuditLogs: getAuditLogs2
 };
@@ -4336,6 +4632,11 @@ router7.get(
   "/audit-logs",
   auth(Role.ADMIN),
   AdminController.getAuditLogs
+);
+router7.get(
+  "/donations",
+  auth(Role.ADMIN),
+  AdminController.getAllDonations
 );
 var AdminRoutes = router7;
 
@@ -6012,6 +6313,7 @@ setupSwagger(app);
 app.use((0, import_helmet.default)());
 app.use(
   (0, import_cors.default)({
+    origin: "http://localhost:3000",
     credentials: true
   })
 );

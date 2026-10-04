@@ -1,3 +1,4 @@
+
 {
   "version": 2,
   "builds": [
@@ -5,7 +6,10 @@
       "src": "dist/vercel.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/templates/**"]
+        "includeFiles": [
+          "dist/templates/**",
+          "node_modules/pdfkit/**"
+        ]
       }
     }
   ],
@@ -16,3 +20,4 @@
     }
   ]
 }
+
