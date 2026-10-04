@@ -738,6 +738,9 @@ if (bloodRequest.status !== "FULFILLED") {
 const executeBkashPayment = async (
   paymentID: string
 ) => {
+  console.log("========== bKash EXECUTE ==========");
+  console.log("Payment ID:", paymentID);
+
   const bkashIdToken = await getBkashIdToken();
 
   if (!bkashIdToken) {
@@ -750,19 +753,7 @@ const executeBkashPayment = async (
   const executeUrl =
     `${config.bkash_base_url}/tokenized/checkout/execute`;
 
-  console.log(
-    "========== bKash EXECUTE =========="
-  );
-
-  console.log(
-    "bKash Execute URL:",
-    executeUrl
-  );
-
-  console.log(
-    "bKash Payment ID:",
-    paymentID
-  );
+  console.log("Execute URL:", executeUrl);
 
   const response = await fetch(
     executeUrl,
@@ -791,10 +782,6 @@ const executeBkashPayment = async (
   console.log(
     "bKash Execute Response:",
     result
-  );
-
-  console.log(
-    "===================================="
   );
 
   if (!response.ok) {
@@ -827,35 +814,27 @@ const executeBkashPayment = async (
     );
   }
 
-  // Already paid
+  // Already PAID
   if (
     payment.status === PaymentStatus.PAID
   ) {
     console.log(
-      "Payment already marked as PAID."
+      "✅ Payment is already PAID"
     );
 
     return payment;
   }
 
-  // Successful payment
+  // bKash payment completed
   if (
     result.transactionStatus === "Completed" &&
     result.trxID
   ) {
     console.log(
-      "========== bKash PAYMENT COMPLETED =========="
+      "========== PAYMENT COMPLETED =========="
     );
 
-    console.log(
-      "Transaction ID:",
-      result.trxID
-    );
-
-    // ------------------------------------------
-    // 1. Update payment as PAID
-    // ------------------------------------------
-
+    // 1. Mark payment as PAID
     const updatedPayment =
       await prisma.payment.update({
         where: {
@@ -873,44 +852,32 @@ const executeBkashPayment = async (
       });
 
     console.log(
-      "✅ Payment status updated to PAID"
+      "✅ Payment updated to PAID"
     );
 
-    // ------------------------------------------
     // 2. Generate receipt
-    // ------------------------------------------
-
     try {
       const receiptPdf =
         await generatePaymentReceipt({
           paymentId: updatedPayment.id,
-
           transactionId: result.trxID,
-
           amount:
             updatedPayment.amount.toString(),
-
           currency:
             updatedPayment.currency,
-
           method:
             updatedPayment.method,
-
           paidAt:
             updatedPayment.paidAt!,
-
           bloodRequestId:
             updatedPayment.bloodRequestId,
         });
 
       console.log(
-        "✅ Payment receipt generated"
+        "✅ Receipt generated"
       );
 
-      // ------------------------------------------
       // 3. Upload receipt
-      // ------------------------------------------
-
       try {
         const uploadedReceipt =
           await uploadToCloudinary(
@@ -919,14 +886,11 @@ const executeBkashPayment = async (
           );
 
         console.log(
-          "✅ Receipt uploaded to Cloudinary:",
+          "✅ Receipt uploaded:",
           uploadedReceipt.secure_url
         );
 
-        // ------------------------------------------
         // 4. Save receipt URL
-        // ------------------------------------------
-
         const paymentWithReceipt =
           await prisma.payment.update({
             where: {
@@ -942,10 +906,7 @@ const executeBkashPayment = async (
           "✅ Receipt URL saved"
         );
 
-        // ------------------------------------------
         // 5. Audit log
-        // ------------------------------------------
-
         try {
           await createAuditLog({
             userId:
@@ -987,28 +948,28 @@ const executeBkashPayment = async (
           });
 
           console.log(
-            "✅ Payment audit log created"
+            "✅ Audit log created"
           );
-        } catch (auditError) {
+        } catch (error) {
           console.error(
             "⚠️ Audit log failed:",
-            auditError
+            error
           );
         }
 
         return paymentWithReceipt;
-      } catch (cloudinaryError) {
+      } catch (error) {
         console.error(
           "⚠️ Cloudinary upload failed:",
-          cloudinaryError
+          error
         );
 
         return updatedPayment;
       }
-    } catch (receiptError) {
+    } catch (error) {
       console.error(
         "⚠️ Receipt generation failed:",
-        receiptError
+        error
       );
 
       return updatedPayment;
@@ -1016,13 +977,12 @@ const executeBkashPayment = async (
   }
 
   console.log(
-    "⚠️ bKash payment was not completed:",
+    "⚠️ Payment not completed:",
     result.transactionStatus
   );
 
   return result;
 };
-
 const bkashCallback = async (query: IQuery) => {
   console.log("========== bKash CALLBACK ==========");
   console.log("Callback Query:", query);
