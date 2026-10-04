@@ -289,7 +289,7 @@ const bkashCallback = catchAsync(
   async (req: Request, res: Response) => {
     console.log("========== bKash CALLBACK ==========");
     console.log("Callback Query:", req.query);
-
+console.log("Frontend URL:", config.frontend_url);
     const paymentID =
       typeof req.query.paymentID === "string"
         ? req.query.paymentID
