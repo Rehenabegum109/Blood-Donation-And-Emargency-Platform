@@ -801,19 +801,17 @@ const executeBkashPayment = async (paymentID: string) => {
     );
   }
 
-  // Already paid
+
   if (payment.status === PaymentStatus.PAID) {
     return payment;
   }
 
-  // Successful payment
+
   if (
     result.transactionStatus === "Completed" &&
     result.trxID
   ) {
-    // ------------------------------------------
-    // 1. FIRST mark payment as PAID
-    // ------------------------------------------
+
 
     const updatedPayment = await prisma.payment.update({
       where: {
@@ -835,11 +833,6 @@ const executeBkashPayment = async (paymentID: string) => {
       updatedPayment.id
     );
 
-    // ------------------------------------------
-    // 2. Generate + upload receipt
-    //    Receipt failure must NOT make payment
-    //    FAILED
-    // ------------------------------------------
 
     try {
       const receiptPdf = await generatePaymentReceipt({

@@ -118,11 +118,15 @@ const getAllBloodRequests = async (
 };
 
 
+
 const getBloodRequestById = async (id: string) => {
+
+
   const bloodRequest = await prisma.bloodRequest.findFirst({
     where: {
       id,
-      deletedAt: null,
+ 
+      
     },
     include: {
       recipient: {
@@ -135,6 +139,8 @@ const getBloodRequestById = async (id: string) => {
       },
     },
   });
+
+  console.log("🩸 Blood Request found:", bloodRequest);
 
   if (!bloodRequest) {
     throw new Error("Blood request not found");
