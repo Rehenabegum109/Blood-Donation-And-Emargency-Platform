@@ -1062,6 +1062,7 @@ export const PaymentScalarFieldEnum = {
   method: 'method',
   status: 'status',
   bkashPaymentId: 'bkashPaymentId',
+  stripeSessionId: 'stripeSessionId',
   transactionId: 'transactionId',
   gatewayResponse: 'gatewayResponse',
   receiptPdfUrl: 'receiptPdfUrl',

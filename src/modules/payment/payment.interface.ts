@@ -1,5 +1,7 @@
+
+
 export interface IQuery {
-  // Pagination
+ 
   page?: string;
   limit?: string;
 
@@ -16,9 +18,16 @@ export interface IQuery {
   paymentID?: string;
   signature?: string;
   apiVersion?: string;
+
+  // Stripe
+  session_id?: string;
 }
 
 export interface IInitiatePaymentPayload {
+  bloodRequestId: string;
+}
+
+export interface IStripeCheckoutPayload {
   bloodRequestId: string;
 }
 
@@ -40,7 +49,7 @@ export interface IBkashCreatePaymentResponse {
   statusCode?: string;
   statusMessage?: string;
   amount?: string;
-  currency?: string;
+  currency?: string; 
   intent?: string;
   merchantInvoiceNumber?: string;
   [key: string]: unknown;
@@ -57,6 +66,7 @@ export interface IBkashExecutePaymentResponse {
   merchantInvoiceNumber?: string;
   [key: string]: unknown;
 }
+
 export interface IBkashQueryPaymentResponse {
   paymentID?: string;
   trxID?: string;

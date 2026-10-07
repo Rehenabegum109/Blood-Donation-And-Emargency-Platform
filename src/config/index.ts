@@ -34,6 +34,8 @@ google_callback_url: process.env.GOOGLE_CALLBACK_URL!,
  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
   cloudinary_api_key: process.env.CLOUDINARY_API_KEY!,
   cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET!,
+  stripe_secret_key: process.env.STRIPE_SECRET_KEY!,
+stripe_webhook_secret: process.env.STRIPE_WEBHOOK_SECRET!,
 };
 
 export default config;

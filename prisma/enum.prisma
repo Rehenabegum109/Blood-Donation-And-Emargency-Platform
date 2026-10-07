@@ -45,6 +45,7 @@ enum DonationStatus {
 
 enum PaymentMethod {
   BKASH
+  STRIPE
 }
 
 enum PaymentStatus {
@@ -54,6 +55,7 @@ enum PaymentStatus {
   CANCELLED
   REFUNDED
 }
+
 enum VerificationStatus {
   PENDING
   VERIFIED

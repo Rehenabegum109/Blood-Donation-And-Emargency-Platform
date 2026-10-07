@@ -73,7 +73,8 @@ export type DonationStatus = (typeof DonationStatus)[keyof typeof DonationStatus
 
 
 export const PaymentMethod = {
-  BKASH: 'BKASH'
+  BKASH: 'BKASH',
+  STRIPE: 'STRIPE'
 } as const
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]

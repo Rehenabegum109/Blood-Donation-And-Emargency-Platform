@@ -11,8 +11,8 @@ model Donor {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  donations        Donation[]
-  user             User       @relation(fields: [userId], references: [id])
+  donations Donation[]
+  user      User       @relation(fields: [userId], references: [id])
 
   @@index([bloodGroup])
   @@index([isAvailable])

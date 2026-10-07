@@ -1,3 +1,26 @@
+// model Payment {
+//   id String @id @default(uuid())
+
+//   bloodRequestId String @unique
+
+//   amount   Decimal       @db.Decimal(10, 2)
+//   currency String        @default("BDT")
+//   method   PaymentMethod @default(BKASH)
+//   status   PaymentStatus @default(PENDING)
+
+//   bkashPaymentId String? @unique
+//   transactionId  String? @unique
+
+//   gatewayResponse Json?
+// receiptPdfUrl String?
+//   paidAt DateTime?
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   bloodRequest BloodRequest @relation(fields: [bloodRequestId], references: [id])
+
+// }
 model Payment {
   id String @id @default(uuid())
 
@@ -8,16 +31,16 @@ model Payment {
   method   PaymentMethod @default(BKASH)
   status   PaymentStatus @default(PENDING)
 
-  bkashPaymentId String? @unique
-  transactionId  String? @unique
+  bkashPaymentId  String? @unique
+  stripeSessionId String? @unique
+  transactionId   String? @unique
 
   gatewayResponse Json?
-receiptPdfUrl String?
-  paidAt DateTime?
+  receiptPdfUrl   String?
 
+  paidAt    DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   bloodRequest BloodRequest @relation(fields: [bloodRequestId], references: [id])
-
 }

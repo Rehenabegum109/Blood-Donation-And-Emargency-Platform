@@ -23,7 +23,10 @@ credentials: true,
 
 app.use(express.urlencoded({ extended: true }));
 
-
+app.use(
+  "/api/v1/payments/stripe/webhook",
+  express.raw({ type: "application/json" })
+);
 app.use(express.json());
 app.use(cookieParser());
 const limiter = rateLimit({
