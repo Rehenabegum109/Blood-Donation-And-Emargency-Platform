@@ -108,15 +108,15 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+      secure: config.node_env === "production",
+  sameSite: config.node_env === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24, 
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: config.node_env === "production",
+    sameSite: config.node_env === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 7, 
   });
 
@@ -193,8 +193,8 @@ const refreshAccessToken = catchAsync(
 
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: config.node_env === "production",
+      sameSite: config.node_env === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24,
     });
 
@@ -262,12 +262,13 @@ const resetPassword = catchAsync(
 );
 const logout = catchAsync( async (req: Request, res: Response) => {
    res.clearCookie("accessToken",
-     { httpOnly: true, secure: false,
-       sameSite: "lax", });
+     { httpOnly: true, 
+      secure: config.node_env === "production",
+       sameSite: config.node_env === "production" ? "none" : "lax", });
         res.clearCookie("refreshToken", 
           { httpOnly: true,
-             secure: false,
-              sameSite: "lax", }); 
+             secure: config.node_env === "production",
+              sameSite: config.node_env === "production" ? "none" : "lax", }); 
               sendResponse(res, { statusCode: httpStatus.OK,
                  success: true, message: "User logged out successfully",
                   data: null, }); }
