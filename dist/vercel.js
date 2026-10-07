@@ -2710,20 +2710,20 @@ var require_ripemd160 = __commonJS({
             return clone;
           }
         });
-        function f1(x, y, z7) {
-          return x ^ y ^ z7;
+        function f1(x, y, z6) {
+          return x ^ y ^ z6;
         }
-        function f2(x, y, z7) {
-          return x & y | ~x & z7;
+        function f2(x, y, z6) {
+          return x & y | ~x & z6;
         }
-        function f3(x, y, z7) {
-          return (x | ~y) ^ z7;
+        function f3(x, y, z6) {
+          return (x | ~y) ^ z6;
         }
-        function f4(x, y, z7) {
-          return x & z7 | y & ~z7;
+        function f4(x, y, z6) {
+          return x & z6 | y & ~z6;
         }
-        function f5(x, y, z7) {
-          return x ^ (y | ~z7);
+        function f5(x, y, z6) {
+          return x ^ (y | ~z6);
         }
         function rotl(x, n) {
           return x << n | x >>> 32 - n;
@@ -133980,8 +133980,9 @@ module.exports = __toCommonJS(vercel_exports);
 // src/app.ts
 var import_cookie_parser = __toESM(require("cookie-parser"));
 var import_cors = __toESM(require("cors"));
-var import_express10 = __toESM(require("express"));
+var import_express9 = __toESM(require("express"));
 var import_helmet = __toESM(require("helmet"));
+var import_express_rate_limit = __toESM(require("express-rate-limit"));
 
 // src/middlewares/globalErrorHandler.ts
 var import_http_status = __toESM(require("http-status"));
@@ -134010,7 +134011,7 @@ var notFound = (req, res) => {
 };
 
 // src/routes.ts
-var import_express9 = require("express");
+var import_express8 = require("express");
 
 // src/modules/auth/auth.route.ts
 var import_express = require("express");
@@ -135100,14 +135101,14 @@ var loginUser2 = catchAsync(async (req, res) => {
   const { accessToken, refreshToken, user } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: config_default.node_env === "production",
+    sameSite: config_default.node_env === "production" ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: config_default.node_env === "production",
+    sameSite: config_default.node_env === "production" ? "none" : "lax",
     maxAge: 1e3 * 60 * 60 * 24 * 7
   });
   sendResponse(res, {
@@ -135153,8 +135154,8 @@ var refreshAccessToken2 = catchAsync(
     );
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: config_default.node_env === "production",
+      sameSite: config_default.node_env === "production" ? "none" : "lax",
       maxAge: 1e3 * 60 * 60 * 24
     });
     sendResponse(res, {
@@ -135209,16 +135210,16 @@ var logout = catchAsync(
       "accessToken",
       {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax"
+        secure: config_default.node_env === "production",
+        sameSite: config_default.node_env === "production" ? "none" : "lax"
       }
     );
     res.clearCookie(
       "refreshToken",
       {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax"
+        secure: config_default.node_env === "production",
+        sameSite: config_default.node_env === "production" ? "none" : "lax"
       }
     );
     sendResponse(res, {
@@ -160619,152 +160620,16 @@ router7.get(
 );
 var AdminRoutes = router7;
 
-// src/modules/audit/audit.route.ts
-var import_express8 = require("express");
-
-// src/modules/audit/audit.controller.ts
-var import_http_status12 = __toESM(require("http-status"));
-
-// src/modules/audit/audit.service.ts
-var getAuditLogs3 = async (params) => {
-  const {
-    page = 1,
-    limit = 20,
-    action,
-    entity,
-    userId
-  } = params;
-  const skip = (page - 1) * limit;
-  const where = {
-    ...action && {
-      action
-    },
-    ...entity && {
-      entity: {
-        contains: entity,
-        mode: "insensitive"
-      }
-    },
-    ...userId && {
-      userId
-    }
-  };
-  const [logs, total] = await Promise.all([
-    prisma.auditLog.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: "desc"
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true
-          }
-        }
-      }
-    }),
-    prisma.auditLog.count({
-      where
-    })
-  ]);
-  return {
-    data: logs,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit)
-    }
-  };
-};
-var AuditService = {
-  getAuditLogs: getAuditLogs3
-};
-
-// src/modules/audit/audit.controller.ts
-var getAuditLogs4 = catchAsync(
-  async (req, res) => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 20;
-    const action = typeof req.query.action === "string" ? req.query.action : void 0;
-    const entity = typeof req.query.entity === "string" ? req.query.entity : void 0;
-    const userId = typeof req.query.userId === "string" ? req.query.userId : void 0;
-    const result = await AuditService.getAuditLogs({
-      page,
-      limit,
-      ...action && { action },
-      ...entity && { entity },
-      ...userId && { userId }
-    });
-    sendResponse(res, {
-      statusCode: import_http_status12.default.OK,
-      success: true,
-      message: "Audit logs retrieved successfully",
-      data: result.data,
-      meta: result.meta
-    });
-  }
-);
-var AuditController = {
-  getAuditLogs: getAuditLogs4
-};
-
-// src/modules/audit/audit.validation.ts
-var import_zod6 = require("zod");
-var getAuditLogsZodSchema = import_zod6.z.object({
-  query: import_zod6.z.object({
-    page: import_zod6.z.string().optional().refine(
-      (value) => value === void 0 || !Number.isNaN(Number(value)) && Number(value) >= 1,
-      {
-        message: "Page must be a positive number"
-      }
-    ),
-    limit: import_zod6.z.string().optional().refine(
-      (value) => value === void 0 || !Number.isNaN(Number(value)) && Number(value) >= 1 && Number(value) <= 100,
-      {
-        message: "Limit must be between 1 and 100"
-      }
-    ),
-    action: import_zod6.z.string().optional(),
-    entity: import_zod6.z.string().optional(),
-    userId: import_zod6.z.string().uuid("Invalid user ID").optional()
-  })
-});
-var auditValidation = {
-  getAuditLogsZodSchema
-};
-
-// src/modules/audit/audit.route.ts
-var router8 = (0, import_express8.Router)();
-router8.get(
-  "/",
-  auth(Role.ADMIN),
-  validateRequest(
-    auditValidation.getAuditLogsZodSchema
-  ),
-  AuditController.getAuditLogs
-);
-var AuditRoutes = router8;
-
 // src/routes.ts
-var router9 = (0, import_express9.Router)();
-router9.use("/auth", AuthRoutes);
-router9.use("/users", UserRoutes);
-router9.use("/admin", AdminRoutes);
-router9.use("/blood-requests", BloodRequestRoutes);
-router9.use("/donors", DonorRoutes);
-router9.use("/donations", DonationRoutes);
-router9.use("/payments", PaymentRoutes);
-router9.use("/audit-logs", AuditRoutes);
-var routes_default = router9;
-
-// src/app.ts
-var import_express_rate_limit = __toESM(require("express-rate-limit"));
+var router8 = (0, import_express8.Router)();
+router8.use("/auth", AuthRoutes);
+router8.use("/users", UserRoutes);
+router8.use("/admin", AdminRoutes);
+router8.use("/blood-requests", BloodRequestRoutes);
+router8.use("/donors", DonorRoutes);
+router8.use("/donations", DonationRoutes);
+router8.use("/payments", PaymentRoutes);
+var routes_default = router8;
 
 // src/docs/swagger.ts
 var import_swagger_ui_express = __toESM(require("swagger-ui-express"));
@@ -162420,21 +162285,30 @@ var setupSwagger = (app2) => {
 };
 
 // src/app.ts
-var app = (0, import_express10.default)();
+var app = (0, import_express9.default)();
 setupSwagger(app);
 app.use((0, import_helmet.default)());
+var allowedOrigins = [
+  process.env.FRONTEND_URL
+].filter(Boolean);
 app.use(
   (0, import_cors.default)({
-    origin: "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true
   })
 );
-app.use(import_express10.default.urlencoded({ extended: true }));
+app.use(import_express9.default.urlencoded({ extended: true }));
 app.use(
   "/api/v1/payments/stripe/webhook",
-  import_express10.default.raw({ type: "application/json" })
+  import_express9.default.raw({ type: "application/json" })
 );
-app.use(import_express10.default.json());
+app.use(import_express9.default.json());
 app.use((0, import_cookie_parser.default)());
 var limiter = (0, import_express_rate_limit.default)({
   windowMs: 15 * 60 * 1e3,
