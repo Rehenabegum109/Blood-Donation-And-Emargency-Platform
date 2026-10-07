@@ -3,16 +3,19 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { notFound } from "./middlewares/notFound";
-
 import router from "./routes";
-import rateLimit from "express-rate-limit";
 import { setupSwagger } from "./docs/swagger";
 
 const app: Application = express();
+
 setupSwagger(app);
+
 app.use(helmet());
+
 const allowedOrigins = [
   "http://localhost:3000",
   process.env.FRONTEND_URL,
@@ -31,15 +34,18 @@ app.use(
   }),
 );
 
-
 app.use(express.urlencoded({ extended: true }));
 
+// Stripe webhook must receive the raw request body
 app.use(
   "/api/v1/payments/stripe/webhook",
-  express.raw({ type: "application/json" })
+  express.raw({ type: "application/json" }),
 );
+
 app.use(express.json());
+
 app.use(cookieParser());
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -54,11 +60,10 @@ const limiter = rateLimit({
     errors: [],
   },
 });
+
 app.use("/api/v1", limiter);
 
 app.use("/api/v1", router);
-
-
 
 app.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
@@ -70,8 +75,9 @@ app.get("/", async (req: Request, res: Response) => {
     },
   });
 });
-app.use(notFound);
-app.use(globalErrorHandler);
 
+app.use(notFound);
+
+app.use(globalErrorHandler);
 
 export default app;
